@@ -28,6 +28,28 @@ app.post("/api/login",(req,res)=>{
 const auth=(req,res,next)=>{const[p,s]=(req.headers.authorization||"").replace("Bearer ","").split(".");
  try{if(p&&s&&same(s,sign(p))&&JSON.parse(Buffer.from(p,"base64url")).exp>Date.now())return next()}catch{}
  res.status(401).json({error:"Non autorisé"})};
+// Séances sur une période : film + date de début/fin + jours + horaires
+const pad2=n=>String(n).padStart(2,"0"),isoU=d=>d.getUTCFullYear()+"-"+pad2(d.getUTCMonth()+1)+"-"+pad2(d.getUTCDate());
+app.post("/api/seances/bulk",auth,async(q,s)=>{try{
+ const{film,date,dateTo,days,times,room,version,thx}=q.body||{},re=/^\d{4}-\d{2}-\d{2}$/;
+ if(!film||!re.test(date||""))return s.status(400).json({error:"Film et date de début obligatoires"});
+ const end=re.test(dateTo||"")?dateTo:date;if(end<date)return s.status(400).json({error:"La date de fin est avant la date de début"});
+ const T=(Array.isArray(times)?times:[]).map(t=>String(t).trim()).filter(Boolean);if(!T.length)return s.status(400).json({error:"Indiquez au moins un horaire"});
+ const W=Array.isArray(days)&&days.length?days.map(Number):[0,1,2,3,4,5,6],out=[];
+ for(const d=new Date(date+"T00:00:00Z"),e=new Date(end+"T00:00:00Z");d<=e;d.setUTCDate(d.getUTCDate()+1)){
+  if(!W.includes(d.getUTCDay()))continue;
+  for(const time of T)out.push({film,date:isoU(d),time,room:room||"",version:version||"VF",thx:!!thx});
+  if(out.length>3000)return s.status(400).json({error:"Trop de séances d'un coup (maximum 3000) : réduisez la période"});
+ }
+ const ex=await M.seances.find({film,date:{$gte:date,$lte:end}}).select("date time"),have=new Set(ex.map(x=>x.date+"|"+x.time)),nw=out.filter(x=>!have.has(x.date+"|"+x.time));
+ if(nw.length)await M.seances.insertMany(nw);
+ s.json({created:nw.length,skipped:out.length-nw.length});
+}catch(e){s.status(400).json({error:e.message})}});
+app.post("/api/seances/purge",auth,async(q,s)=>{try{
+ const{film,before}=q.body||{},f={};if(film)f.film=film;if(before)f.date={$lt:before};
+ if(!film&&!before)return s.status(400).json({error:"Précisez un film ou une date"});
+ s.json({deleted:(await M.seances.deleteMany(f)).deletedCount});
+}catch(e){s.status(400).json({error:e.message})}});
 for(const[name,Model]of Object.entries(M)){
  const r=express.Router();
  r.get("/",async(q,s)=>s.json(await Model.find(q.query.film?{film:q.query.film}:{}).sort(name=="seances"?{date:1,time:1}:{createdAt:-1})));
