@@ -1,53 +1,113 @@
 <!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Administration</title>
 <style>*{box-sizing:border-box}body{margin:0;font:15px system-ui,sans-serif;background:#f1f2f6;color:#161620}
-.lay{display:flex;min-height:100vh}.sb{width:220px;background:#161620;color:#fff;padding:16px;flex:none;position:sticky;top:0;height:100vh}.sb h1{font-size:17px;margin:0 0 18px}
-.sb button,.sb a{display:block;width:100%;text-align:left;background:none;border:0;color:#cfd0dc;padding:10px 12px;border-radius:8px;cursor:pointer;font:inherit;text-decoration:none;margin-bottom:2px}.sb .on,.sb button:hover,.sb a:hover{background:#2a2a3c;color:#fff}.sb hr{border:0;border-top:1px solid #333;margin:12px 0}
-.mn{flex:1;padding:22px;max-width:1000px;min-width:0}h2{margin:0 0 16px}.card{background:#fff;border:1px solid #e1e2ea;border-radius:14px;padding:18px;margin-bottom:18px}
-label{display:block;font-size:13px;color:#666;margin-top:12px}input,select,textarea{width:100%;padding:10px;border:1px solid #d3d4de;border-radius:9px;font:inherit;margin-top:4px;background:#fff}input[type=checkbox]{width:auto}input[type=color]{height:42px;padding:3px}
-.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:0 16px}.b{background:#e5173f;color:#fff;border:0;border-radius:99px;padding:10px 20px;font-weight:600;cursor:pointer;font:inherit;font-weight:600}.b.o{background:none;color:#161620;border:1px solid #d3d4de}.b.s{padding:5px 12px;font-size:13px}
-table{width:100%;border-collapse:collapse}td,th{padding:9px 6px;border-bottom:1px solid #eee;text-align:left;font-size:14px}.err{color:#e5173f;margin-top:8px}.ok{color:#168a3d;margin-top:8px}
-.im img{max-height:90px;max-width:100%;display:block;margin:6px 0;border-radius:8px;background:#eee}.im input[type=file]{padding:6px}.tt{overflow-x:auto}.top{display:none}
-@media(max-width:760px){.lay{display:block}.sb{width:100%;height:auto;position:static;display:flex;flex-wrap:wrap;gap:4px}.sb h1{width:100%;margin:0 0 8px}.sb button,.sb a{width:auto;padding:8px 10px}.sb hr{display:none}.mn{padding:12px}}</style></head><body><div id="app"></div>
+.top{background:#161620;color:#fff;display:flex;align-items:center;gap:12px;padding:8px 16px;flex-wrap:wrap;position:sticky;top:0;z-index:5}.top nav{display:flex;gap:2px;flex:1;overflow-x:auto}
+.top button,.top a{background:none;border:0;color:#cfd0dc;padding:9px 13px;border-radius:8px;cursor:pointer;font:inherit;text-decoration:none;white-space:nowrap}.top .on,.top button:hover,.top a:hover{background:#2a2a3c;color:#fff}
+.mn{max-width:1100px;margin:auto;padding:20px}h2{margin:0 0 14px}h3{margin:0 0 8px}.card{background:#fff;border:1px solid #e1e2ea;border-radius:14px;padding:18px;margin-bottom:16px}
+label{display:block;font-size:13px;color:#666;margin-top:12px}input,select,textarea{width:100%;padding:10px;border:1px solid #d3d4de;border-radius:9px;font:inherit;margin-top:4px;color:#161620;background:#fff;-webkit-text-fill-color:#161620}input[type=checkbox]{width:auto}input[type=color]{height:42px;padding:3px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:0 16px}.b{background:#e5173f;color:#fff;border:0;border-radius:99px;padding:10px 20px;cursor:pointer;font:inherit;font-weight:600}.b.o{background:#fff;color:#161620;border:1px solid #d3d4de}.b.s{padding:5px 11px;font-size:13px}
+table{width:100%;border-collapse:collapse}td,th{padding:9px 6px;border-bottom:1px solid #eee;text-align:left;font-size:14px}.tt{overflow-x:auto}.err{color:#e5173f;margin-top:8px}.ok{color:#168a3d;margin-top:8px}
+.im img{max-height:90px;max-width:100%;display:block;margin:6px 0;border-radius:8px;background:#eee}.im input[type=file]{padding:6px}
+.bar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap}.sub{display:flex;gap:6px;margin-bottom:14px}.sub button,.dl nav button{background:#fff;border:1px solid #d3d4de;border-radius:99px;padding:8px 16px;cursor:pointer;font:inherit}.sub .on,.dl nav .on{background:#161620;color:#fff;border-color:#161620}
+.dl{display:grid;grid-template-columns:190px 1fr;gap:16px}.dl nav{display:flex;flex-direction:column;gap:6px;align-self:start}.dl nav button{text-align:left;border-radius:10px}
+.bl{display:grid;grid-template-columns:230px 1fr;gap:16px;align-items:start}.pi{background:#f1f2f6;border:1px dashed #b9bacb;border-radius:10px;padding:10px;margin:6px 0;cursor:grab}.pi:hover{background:#e6e7f0}
+.cv{min-height:200px;border:2px dashed #cfd0dc;border-radius:14px;padding:10px}.bk{background:#fff;border:1px solid #e1e2ea;border-radius:12px;padding:12px;margin-bottom:10px}.bh{display:flex;justify-content:space-between;align-items:center}.dh{cursor:grab}
+.mr{display:flex;gap:8px;margin-bottom:8px;align-items:center}.mr input{margin:0}.tp{display:flex;gap:10px;flex-wrap:wrap}.sw{display:inline-block;width:18px;height:18px;border-radius:50%;margin-right:3px;vertical-align:middle}
+@media(max-width:760px){.dl,.bl{grid-template-columns:1fr}.dl nav{flex-direction:row;flex-wrap:wrap}.mn{padding:12px}.mr{flex-wrap:wrap}}</style></head><body><div id="app"></div>
 <script>
-const FM=[["title","Titre *"],["status","Statut",["old:À l'affiche","new:Nouveauté","soon:Prochainement"]],["duration","Durée (ex. 1h40)"],["rating","Public"],["genre","Genre"],["director","Réalisateur"],["cast","Acteurs"],["releaseDate","Date de sortie"],["poster","Affiche","img"],["backdrop","Grande image du carrousel","img"],["trailer","Lien bande-annonce"],["synopsis","Synopsis","area"],["featured","Afficher dans le carrousel","chk"]];
-const CFG={films:{l:"Films",cols:["title","status","duration"],f:FM},
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+const STA=["old:À l'affiche","new:Nouveauté","soon:Prochainement"];
+const CF={films:{l:"Films",cols:["title","status","duration"],f:[["title","Titre *"],["status","Statut",STA],["duration","Durée (ex. 1h40)"],["rating","Public"],["genre","Genre"],["director","Réalisateur"],["cast","Acteurs"],["releaseDate","Date de sortie"],["poster","Affiche","img"],["backdrop","Grande image du carrousel","img"],["trailer","Lien bande-annonce"],["synopsis","Synopsis","area"],["featured","Afficher dans le carrousel","chk"]]},
 seances:{l:"Séances",cols:["film","date","time","room"],f:[["film","Film *","films"],["date","Date *","date"],["time","Horaires * (plusieurs : 14h00, 16h30, 19h00)"],["room","Salle"],["version","Version (VF, VOST…)"],["thx","Salle THX","chk"]]},
 events:{l:"Évènements",cols:["title","label","date"],f:[["title","Titre *"],["label","Étiquette (Avant-première…)"],["date","Date"],["text","Description","area"],["image","Image","img"],["featured","Mettre en avant","chk"]]},
-news:{l:"Actualités",cols:["title","createdAt"],f:[["title","Titre *"],["image","Image","img"],["text","Contenu","area"]]},
-pages:{l:"Pages",cols:["title","inMenu","inFooter","order"],f:[["title","Titre *"],["text","Contenu","area"],["inMenu","Afficher dans le menu","chk"],["inFooter","Afficher dans le pied de page","chk"],["order","Ordre dans le menu (1,2,3…)","num"]]}};
-const SET=[["siteName","Nom du site"],["logo","Logo","img"],["favicon","Icône (favicon)","img"],["primary","Couleur principale","color"],["bg","Couleur de fond","color"],["panel","Couleur des panneaux","color"],["seoTitle","Titre SEO (onglet Google)"],["seoDesc","Description SEO","area"],["ogImage","Image de partage (réseaux)","img"],["address","Adresse"],["footer","Texte du pied de page"],["email","E-mail de contact"],["phone","Téléphone"],["facebook","Lien Facebook"],["twitter","Lien X / Twitter"],["footerLinks","Liens en plus dans le pied de page (un par ligne : Texte|https://adresse)","area"],["prices","Tarifs (Nom:prix, séparés par des virgules)","area"]];
-let T=sessionStorage.t,tab="films",D={},ed=null,msg="",ok="";const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+news:{l:"Actualités",cols:["title","createdAt"],f:[["title","Titre *"],["image","Image","img"],["text","Contenu","area"]]}};
+const TABS=[["pages","Pages"],["menus","Menus"],["films","Films"],["events","Évènements"],["news","Actualités"],["design","Design"],["settings","Paramètres"]];
+const DS=[["icons","Icônes"],["template","Template"],["colors","Couleurs"],["fonts","Polices"],["header","Entête"],["footer","Pied de page"]];
+const FONTS=["Montserrat","Poppins","Roboto","Open Sans","Lato","Oswald","Nunito","Playfair Display"].map(f=>f+":"+f);
+const SFS={icons:[["logo","Logo","img"],["favicon","Favicon","img"]],colors:[["primary","Couleur principale (boutons, accents)","color"],["bg","Fond du site","color"],["panel","Fond des panneaux","color"]],fonts:[["fontFamily","Police du site",FONTS]],
+header:[["headerBg","Fond de l'entête","color"],["headerText","Texte de l'entête","color"],["headerLogoPos","Position du logo",["left:À gauche","center:Centré"]],["headerSticky","Entête fixe en haut au défilement","chk"]],
+footer:[["footerBg","Fond du pied de page","color"],["footerText","Texte du pied de page","color"],["footer","Texte de copyright"],["footerLinks","Liens en plus (un par ligne : Texte|https://adresse)","area"]],
+main:[["siteName","Nom du site"],["seoTitle","Titre SEO (onglet et Google)"],["seoDesc","Description SEO","area"],["ogImage","Image de partage (réseaux sociaux)","img"],["address","Adresse"],["phone","Téléphone"],["email","E-mail de contact"],["facebook","Lien Facebook"],["twitter","Lien X / Twitter"],["prices","Tarifs de réservation (Nom:prix, séparés par des virgules)","area"]]};
+const TPL=[["Rouge cinéma",{primary:"#e5173f",bg:"#222222",panel:"#0a4f6b",headerBg:"#1b1b1b"}],["Nuit bleue",{primary:"#3b82f6",bg:"#0f172a",panel:"#1e3a5f",headerBg:"#0b1220"}],["Or et noir",{primary:"#d4a017",bg:"#111111",panel:"#2a2a2a",headerBg:"#000000"}],["Violet",{primary:"#a855f7",bg:"#1a1025",panel:"#3b1f66",headerBg:"#12091c"}]];
+const PAL=[["Programmation",[["carousel","Carrousel"],["today","Aujourd'hui (séances)"],["films","Films à l'affiche"],["soon","Prochainement"],["events","Évènements"],["news","Actualités"]]],["Contenu",[["title","Titre"],["text","Texte"],["image","Image"],["video","Vidéo"],["button","Bouton"],["divider","Séparateur"]]]];
+const BN=Object.fromEntries(PAL.flatMap(g=>g[1]));
+const BF={title:[["text","Texte du titre"],["align","Alignement",["left:Gauche","center:Centré"]]],text:[["text","Texte","area"]],image:[["src","Image","img"]],video:[["url","Lien YouTube"]],button:[["label","Texte du bouton"],["url","Lien (ex. #/films ou https://…)"]],today:[["title","Titre (facultatif)"]]};
+let T=sessionStorage.t,tab="pages",fsub="films",SEC="icons",D={},ed=null,pg=null,MN=[],curF=[],msg="",ok="",drag=null;
 const api=async(m,u,b)=>{const r=await fetch("/api/"+u,{method:m,headers:{"Content-Type":"application/json",Authorization:"Bearer "+T},body:b&&JSON.stringify(b)});const j=await r.json().catch(()=>({}));if(r.status==401&&u!="login"){sessionStorage.removeItem("t");T=null;draw();throw"Session expirée, reconnectez-vous"}if(!r.ok)throw j.error||"Erreur";return j};
-const load=async()=>{for(const k of["films","seances","events","news","pages"])D[k]=await api("GET",k);D.settings=await api("GET","settings")};
+const load=async()=>{for(const k of["films","seances","events","news","pages"])D[k]=await api("GET",k);D.settings=await api("GET","settings");const m=D.settings.menu;MN=(Array.isArray(m)&&m.length?m:[{label:"Films",url:"#/films"},{label:"Évènements",url:"#/events"},{label:"Actualités",url:"#/actus"}]).map(x=>({label:x.label,url:x.url}))};
+const run=async(fn,m="Enregistré ✔")=>{try{await fn();await load();msg="";ok=m}catch(er){msg=String(er);ok=""}draw()};
 const fn=id=>(D.films.find(f=>f._id==id)||{}).title||"?";
 const comp=f=>new Promise(r=>{const i=new Image();i.onload=()=>{const k=Math.min(1,1400/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*k;c.height=i.height*k;c.getContext("2d").drawImage(i,0,0,c.width,c.height);r(c.toDataURL(f.type=="image/png"&&f.size<4e5?"image/png":"image/jpeg",.82))};i.src=URL.createObjectURL(f)});
-function field([k,l,t],v){v=v??"";
-if(t=="chk")return`<label><input type=checkbox name=${k} ${v?"checked":""}> ${l}</label>`;
-if(t=="area")return`<label>${l}<textarea name=${k} rows=5>${esc(v)}</textarea></label>`;
-if(t=="color")return`<label>${l}<input name=${k} type=color value="${v||"#e5173f"}"></label>`;
-if(t=="films")return`<label>${l}<select name=${k}>${D.films.map(f=>`<option value="${f._id}" ${f._id==v?"selected":""}>${esc(f.title)}</option>`).join("")}</select></label>`;
-if(t=="img")return`<div class=im><label>${l}</label><img src="${esc(v)}" ${v?"":"hidden"}><input name=${k} value="${esc(v)}" placeholder="URL de l'image (ou envoyez un fichier ci-dessous)"><input type=file accept="image/*" data-up=${k}> ${v?`<button type=button class="b o s" data-rm=${k}>Retirer</button>`:""}</div>`;
-if(Array.isArray(t))return`<label>${l}<select name=${k}>${t.map(o=>{const[a,b]=o.split(":");return`<option value="${a}" ${a==v?"selected":""}>${b}</option>`}).join("")}</select></label>`;
-return`<label>${l}<input name=${k} type="${t=="date"?"date":t=="num"?"number":"text"}" value="${esc(v)}"></label>`}
-const cell=(k,x)=>k=="film"?fn(x.film):(k=="inMenu"||k=="inFooter")?(x[k]?"Oui":"Non"):k=="createdAt"?new Date(x[k]).toLocaleDateString("fr-FR"):esc(x[k]??"");
+function field([k,l,t],v,x=""){v=v??"";
+if(t=="chk")return`<label><input type=checkbox name=${k} ${x} ${v?"checked":""}> ${l}</label>`;
+if(t=="area")return`<label>${l}<textarea name=${k} ${x} rows=5>${esc(v)}</textarea></label>`;
+if(t=="color")return`<label>${l}<input name=${k} ${x} type=color value="${esc(v||"#000000")}"></label>`;
+if(t=="films")return`<label>${l}<select name=${k} ${x}>${D.films.map(f=>`<option value="${f._id}" ${f._id==v?"selected":""}>${esc(f.title)}</option>`).join("")}</select></label>`;
+if(t=="img")return`<div class=im><label>${l}</label><img src="${esc(v)}" ${v?"":"hidden"}><input name=${k} ${x} value="${esc(v)}" placeholder="URL de l'image (ou envoyez un fichier)"><input type=file accept="image/*" data-up=${k} ${x}> ${v?`<button type=button class="b o s" data-clr=${k} ${x}>Retirer</button>`:""}</div>`;
+if(Array.isArray(t))return`<label>${l}<select name=${k} ${x}>${t.map(o=>{const[a,b]=o.split(":");return`<option value="${a}" ${a==v?"selected":""}>${b}</option>`}).join("")}</select></label>`;
+return`<label>${l}<input name=${k} ${x} type="${t=="date"?"date":t=="num"?"number":"text"}" value="${esc(v)}"></label>`}
+const read=(fs,f)=>Object.fromEntries(fs.map(([k,,t])=>{const el=f.elements[k];return[k,t=="chk"?el.checked:t=="num"?(+el.value||0):el.value]}));
+const cell=(k,x)=>k=="film"?fn(x.film):k=="createdAt"?new Date(x[k]).toLocaleDateString("fr-FR"):esc(x[k]??"");
+const curKey=()=>tab=="films"&&fsub=="seances"?"seances":tab;
+const msgs=()=>`<div class=err>${esc(msg)}</div><div class=ok>${ok}</div>`;
+function crud(k){const c=CF[k],it=D[k];return`<h2>${tab=="films"?"Films et séances":c.l}</h2>`+(tab=="films"?`<div class=sub><button data-fs=films class="${k=="films"?"on":""}">Films</button><button data-fs=seances class="${k=="seances"?"on":""}">Séances</button></div>`:"")+
+`<form id=fm class=card><b>${ed?"Modifier":"Ajouter"}</b><div class=g>${c.f.map(f=>field(f,ed&&(f[2]=="films"?ed.film:ed[f[0]]))).join("")}</div><p><button class=b>${ed?"Enregistrer":"Ajouter"}</button> ${ed?'<button type=button class="b o" id=cx>Annuler</button>':""}</p>${msgs()}</form>
+<div class="card tt"><table><tr>${c.cols.map(x=>`<th>${x}</th>`).join("")}<th></th></tr>${it.map(x=>`<tr>${c.cols.map(y=>`<td>${cell(y,x)}</td>`).join("")}<td style="text-align:right;white-space:nowrap"><button class="b o s" data-e=${x._id}>Modifier</button> <button class="b o s" data-d=${x._id}>Supprimer</button></td></tr>`).join("")||"<tr><td>Rien pour le moment</td></tr>"}</table></div>`}
+const sform=fs=>{curF=fs;return`<form id=fm class=card><div class=g>${fs.map(f=>field(f,f[0]=="headerSticky"?D.settings.headerSticky!==false:D.settings[f[0]])).join("")}</div><p><button class=b>Enregistrer</button></p>${msgs()}</form>`};
+const pagesList=()=>`<h2>Pages</h2><div class=bar><span>Chaque page est construite avec des blocs.</span><button class=b id=pn>+ Nouvelle page</button></div>${msgs()}<div class="card tt"><table><tr><th>Titre</th><th>Statut</th><th></th></tr>${D.pages.map(p=>`<tr><td>${esc(p.title)}</td><td>${p.isHome?"Page d'accueil ":""}${p.inFooter?"· Pied de page":""}</td><td style="text-align:right;white-space:nowrap"><button class="b o s" data-pe=${p._id}>Modifier</button> <button class="b o s" data-pd=${p._id}>Supprimer</button></td></tr>`).join("")}</table></div>`;
+const builder=()=>`<div class=bar><button class="b o" id=bk2>← Pages</button><b>${pg._id?"Modifier la page":"Nouvelle page"}</b><button class=b id=sv>Enregistrer la page</button></div>${msgs()}
+<form id=pm class=card><div class=g>${field(["title","Titre de la page *"],pg.title)}${field(["order","Ordre","num"],pg.order)}</div>${field(["inFooter","Afficher dans le pied de page","chk"],pg.inFooter)}${field(["isHome","Utiliser comme page d'accueil","chk"],pg.isHome)}</form>
+<div class=bl><aside class=card>${PAL.map(([g,l])=>`<b>${g}</b>${l.map(([t,n])=>`<div class=pi draggable=true data-p=${t}>＋ ${n}</div>`).join("")}`).join("")}<small>Cliquez ou glissez un bloc vers la page.</small></aside><div id=cv class=cv></div></div>`;
+const blockCard=(b,i)=>`<div class=bk data-i=${i}><div class=bh><b class=dh draggable=true data-i=${i}>⠿ ${BN[b.type]||b.type}</b><span><button type=button class="b o s" data-mv=-1 data-i=${i}>↑</button> <button type=button class="b o s" data-mv=1 data-i=${i}>↓</button> <button type=button class="b o s" data-rm=${i}>✕</button></span></div>${(BF[b.type]||[]).map(f=>field(f,b[f[0]],`data-b=${i}`)).join("")||"<small>Bloc automatique : il se remplit avec vos films, évènements et actualités.</small>"}</div>`;
+const drawCanvas=()=>{$("#cv").innerHTML=pg.blocks.map(blockCard).join("")||"<p style='color:#888;text-align:center;padding:40px 0'>Page vide : ajoutez des blocs depuis la liste.</p>"};
+const pre=()=>[["Accueil","#/"],["Films","#/films"],["Évènements","#/events"],["Actualités","#/actus"],...D.pages.filter(p=>!p.isHome).map(p=>[p.title,"#/page/"+p._id])];
+const menus=()=>`<h2>Menus</h2><div class=card><h3>Menu principal (en haut du site)</h3>${MN.map((m,i)=>`<div class=mr><input data-m=${i} data-k=label value="${esc(m.label)}" placeholder="Texte"><input data-m=${i} data-k=url value="${esc(m.url)}" placeholder="Lien"><button class="b o s" data-mm=-1 data-i=${i}>↑</button><button class="b o s" data-mm=1 data-i=${i}>↓</button><button class="b o s" data-md=${i}>✕</button></div>`).join("")}
+<p><select id=ms style="width:auto;max-width:100%">${pre().map(([l],i)=>`<option value=${i}>${esc(l)}</option>`).join("")}<option value=-1>Lien personnalisé…</option></select> <button class="b o" id=ma>Ajouter au menu</button></p><p><button class=b id=msv>Enregistrer le menu</button></p>${msgs()}</div>`;
+const design=()=>`<h2>Design</h2><div class=dl><nav class=card>${DS.map(([k,l])=>`<button data-s=${k} class="${k==SEC?"on":""}">${l}</button>`).join("")}</nav><div>${SEC=="template"?`<div class=card><h3>Template</h3><p>Choisissez l'ambiance générale, puis ajustez dans Couleurs.</p><div class=tp>${TPL.map(([n,c],i)=>`<button class="b o" data-tpl=${i}><span class=sw style="background:${c.primary}"></span><span class=sw style="background:${c.bg}"></span><span class=sw style="background:${c.panel}"></span> ${n}</button>`).join("")}</div>${msgs()}</div>`:sform(SFS[SEC])}</div></div>`;
 function draw(){const a=$("#app");
 if(!T){a.innerHTML=`<div class=card style="max-width:380px;margin:80px auto"><h2>Administration</h2><label>Mot de passe<input id=pw type=password autofocus></label><label><input type=checkbox id=sp> Afficher le mot de passe</label><p><button class=b id=go>Connexion</button></p><div class=err id=e></div></div>`;
 const go=async()=>{try{T=(await api("POST","login",{password:$("#pw").value})).token;sessionStorage.t=T;await load();draw()}catch(e){$("#e").textContent=e}};$("#sp").onchange=e=>$("#pw").type=e.target.checked?"text":"password";$("#go").onclick=go;$("#pw").onkeydown=e=>e.key=="Enter"&&go();return}
-const side=`<div class=sb><h1>🎬 ${esc(D.settings.siteName||"Administration")}</h1>${[...Object.keys(CFG),"settings"].map(k=>`<button class="${k==tab?"on":""}" data-t=${k}>${k=="settings"?"⚙ Réglages du site":CFG[k].l}</button>`).join("")}<hr><a href="/" target=_blank>Voir le site ↗</a><button id=out>Déconnexion</button></div>`;
-let body;
-if(tab=="settings")body=`<h2>Réglages du site</h2><form id=fm class=card><div class=g>${SET.map(f=>field(f,D.settings[f[0]])).join("")}</div><p><button class=b>Enregistrer</button></p><div class=err>${msg}</div><div class=ok>${ok}</div></form>`;
-else{const c=CFG[tab],it=D[tab];body=`<h2>${c.l}</h2><form id=fm class=card><b>${ed?"Modifier":"Ajouter"}</b><div class=g>${c.f.map(f=>field(f,ed&&(f[2]=="films"?ed.film:ed[f[0]]))).join("")}</div><p><button class=b>${ed?"Enregistrer":"Ajouter"}</button> ${ed?'<button type=button class="b o" id=cx>Annuler</button>':""}</p><div class=err>${msg}</div><div class=ok>${ok}</div></form>
-<div class="card tt"><table><tr>${c.cols.map(k=>`<th>${k}</th>`).join("")}<th></th></tr>${it.map(x=>`<tr>${c.cols.map(k=>`<td>${cell(k,x)}</td>`).join("")}<td style="text-align:right;white-space:nowrap"><button class="b o s" data-e=${x._id}>Modifier</button> <button class="b o s" data-d=${x._id}>Supprimer</button></td></tr>`).join("")||"<tr><td>Rien pour le moment</td></tr>"}</table></div>`}
-a.innerHTML=`<div class=lay>${side}<div class=mn>${body}</div></div>`;
+const top=`<div class=top><b>🎬 ${esc(D.settings.siteName||"Admin")}</b><nav>${TABS.map(([k,l])=>`<button data-t=${k} class="${k==tab?"on":""}">${l}</button>`).join("")}</nav><a href="/" target=_blank>Voir le site ↗</a><button id=out>Déconnexion</button></div>`;
+const body=tab=="pages"?(pg?builder():pagesList()):tab=="menus"?menus():tab=="design"?design():tab=="settings"?"<h2>Paramètres</h2>"+sform(SFS.main):crud(curKey());
+a.innerHTML=top+`<div class=mn>${body}</div>`;bind()}
+function bind(){const a=$("#app"),on=(s,f)=>$$(s).forEach(f);
 $("#out").onclick=()=>{sessionStorage.removeItem("t");T=null;draw()};
-a.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tab=b.dataset.t;ed=null;msg=ok="";draw()});
-a.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{ed=D[tab].find(x=>x._id==b.dataset.e);msg=ok="";draw();scrollTo(0,0)});
-a.querySelectorAll("[data-d]").forEach(b=>b.onclick=async()=>{if(confirm("Supprimer définitivement ?")){try{await api("DELETE",tab+"/"+b.dataset.d);await load();draw()}catch(e){alert(e)}}});
-a.querySelectorAll("[data-up]").forEach(i=>i.onchange=async()=>{if(!i.files[0])return;const u=await comp(i.files[0]),w=i.closest(".im");w.querySelector("input:not([type=file])").value=u;const m=w.querySelector("img");m.src=u;m.hidden=false});
-a.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{const w=b.closest(".im");w.querySelector("input:not([type=file])").value="";w.querySelector("img").hidden=true;b.remove()});
-if(ed&&tab!="settings")$("#cx").onclick=()=>{ed=null;draw()};
-$("#fm").onsubmit=async e=>{e.preventDefault();const fs=tab=="settings"?SET:CFG[tab].f,o={};fs.forEach(([k,,t])=>{const el=e.target.elements[k];o[k]=t=="chk"?el.checked:t=="num"?(+el.value||0):el.value});
-try{if(tab=="settings")await api("PUT","settings",o);else if(tab=="seances"&&!ed){for(const t of o.time.split(",").map(s=>s.trim()).filter(Boolean))await api("POST","seances",{...o,time:t})}else await api(ed?"PUT":"POST",tab+(ed?"/"+ed._id:""),o);
-ed=null;msg="";ok="Enregistré ✔";await load();draw()}catch(er){msg=er;ok="";draw()}}}
+on("[data-t]",b=>b.onclick=()=>{tab=b.dataset.t;ed=null;pg=null;msg=ok="";draw()});
+on("[data-fs]",b=>b.onclick=()=>{fsub=b.dataset.fs;ed=null;msg=ok="";draw()});
+on("[data-s]",b=>b.onclick=()=>{SEC=b.dataset.s;msg=ok="";draw()});
+on("[data-up]",i=>{if(i.dataset.b!=null)return;i.onchange=async()=>{if(!i.files[0])return;const u=await comp(i.files[0]),w=i.closest(".im");w.querySelector("input:not([type=file])").value=u;const m=w.querySelector("img");m.src=u;m.hidden=false}});
+on("[data-clr]",b=>{if(b.dataset.b!=null)return;b.onclick=()=>{const w=b.closest(".im");w.querySelector("input:not([type=file])").value="";w.querySelector("img").hidden=true;b.remove()}});
+on("[data-e]",b=>b.onclick=()=>{ed=D[curKey()].find(x=>x._id==b.dataset.e);msg=ok="";draw();scrollTo(0,0)});
+on("[data-d]",b=>b.onclick=()=>{if(confirm("Supprimer définitivement ?"))run(()=>api("DELETE",curKey()+"/"+b.dataset.d),"Supprimé ✔")});
+if($("#cx"))$("#cx").onclick=()=>{ed=null;draw()};
+const fm=$("#fm");
+if(fm)fm.onsubmit=e=>{e.preventDefault();
+ if(tab=="settings"||tab=="design")return run(()=>api("PUT","settings",read(curF,fm)));
+ const k=curKey(),o=read(CF[k].f,fm),was=ed;ed=null;
+ run(async()=>{if(k=="seances"&&!was){for(const t of o.time.split(",").map(s=>s.trim()).filter(Boolean))await api("POST","seances",{...o,time:t})}else await api(was?"PUT":"POST",k+(was?"/"+was._id:""),o)})};
+on("[data-tpl]",b=>b.onclick=()=>{const c={...TPL[+b.dataset.tpl][1]};c.footerBg=c.primary;c.headerText="#ffffff";run(()=>api("PUT","settings",c),"Template appliqué ✔")});
+// pages
+if($("#pn"))$("#pn").onclick=()=>{pg={title:"",order:D.pages.length,blocks:[]};msg=ok="";draw()};
+on("[data-pe]",b=>b.onclick=()=>{const p=D.pages.find(x=>x._id==b.dataset.pe);pg=JSON.parse(JSON.stringify(p));if(!(pg.blocks&&pg.blocks.length))pg.blocks=p.text?[{type:"text",text:p.text}]:[];msg=ok="";draw()});
+on("[data-pd]",b=>b.onclick=()=>{if(confirm("Supprimer cette page ?"))run(()=>api("DELETE","pages/"+b.dataset.pd),"Page supprimée ✔")});
+if(pg&&tab=="pages"){drawCanvas();
+ $("#pm").onsubmit=e=>e.preventDefault();
+ $("#bk2").onclick=()=>{pg=null;msg=ok="";draw()};
+ $("#sv").onclick=()=>{const f=$("#pm").elements,o={title:f.title.value,order:+f.order.value||0,inFooter:f.inFooter.checked,isHome:f.isHome.checked,blocks:pg.blocks};
+  if(!o.title.trim()){msg="Le titre est obligatoire";ok="";return draw()}
+  const id=pg._id;run(async()=>{if(o.isHome)for(const p of D.pages)if(p.isHome&&p._id!=id)await api("PUT","pages/"+p._id,{isHome:false});if(id)await api("PUT","pages/"+id,o);else await api("POST","pages",o);pg=null},"Page enregistrée ✔")};
+ on(".pi",p=>{p.onclick=()=>{pg.blocks.push({type:p.dataset.p});drawCanvas()};p.ondragstart=()=>drag={type:p.dataset.p}});
+ const cv=$("#cv");
+ cv.ondragstart=e=>{const h=e.target.closest(".dh");if(h)drag={from:+h.dataset.i}};cv.ondragover=e=>e.preventDefault();
+ cv.ondrop=e=>{e.preventDefault();if(!drag)return;const c=e.target.closest(".bk"),to=c?+c.dataset.i:pg.blocks.length;if(drag.type)pg.blocks.splice(to,0,{type:drag.type});else if(drag.from!=null){const[x]=pg.blocks.splice(drag.from,1);pg.blocks.splice(to,0,x)}drag=null;drawCanvas()};
+ cv.oninput=e=>{const t=e.target;if(t.dataset.b!=null&&t.name)pg.blocks[+t.dataset.b][t.name]=t.type=="checkbox"?t.checked:t.value};
+ cv.onchange=async e=>{const t=e.target;if(t.dataset.up&&t.files&&t.files[0]){pg.blocks[+t.dataset.b][t.dataset.up]=await comp(t.files[0]);drawCanvas()}};
+ cv.onclick=e=>{const b=e.target.closest("button");if(!b)return;const d=b.dataset;
+  if(d.rm!=null)pg.blocks.splice(+d.rm,1);else if(d.mv){const i=+d.i,j=i+ +d.mv;if(j<0||j>=pg.blocks.length)return;[pg.blocks[i],pg.blocks[j]]=[pg.blocks[j],pg.blocks[i]]}else if(d.clr)pg.blocks[+d.b][d.clr]="";else return;drawCanvas()}}
+// menus
+on("[data-m]",i=>i.oninput=()=>{MN[+i.dataset.m][i.dataset.k]=i.value});
+on("[data-mm]",b=>b.onclick=()=>{const i=+b.dataset.i,j=i+ +b.dataset.mm;if(j<0||j>=MN.length)return;[MN[i],MN[j]]=[MN[j],MN[i]];draw()});
+on("[data-md]",b=>b.onclick=()=>{MN.splice(+b.dataset.md,1);draw()});
+if($("#ma"))$("#ma").onclick=()=>{const i=+$("#ms").value,p=pre()[i];MN.push(p?{label:p[0],url:p[1]}:{label:"Nouveau lien",url:"https://"});draw()};
+if($("#msv"))$("#msv").onclick=()=>run(()=>api("PUT","settings",{menu:MN.filter(m=>m.label&&m.url)}),"Menu enregistré ✔")}
 T?load().then(draw).catch(draw):draw();
 </script></body></html>
