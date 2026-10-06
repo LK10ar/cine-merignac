@@ -28,6 +28,22 @@ app.post("/api/login",(req,res)=>{
 const auth=(req,res,next)=>{const[p,s]=(req.headers.authorization||"").replace("Bearer ","").split(".");
  try{if(p&&s&&same(s,sign(p))&&JSON.parse(Buffer.from(p,"base64url")).exp>Date.now())return next()}catch{}
  res.status(401).json({error:"Non autorisé"})};
+// ===== Page Contact : messages du formulaire (envoi public, lecture réservée à l'admin) =====
+const Msg=mongoose.model("Message",S({name:String,email:String,subject:String,text:String,read:{type:Boolean,default:false}}));
+const cTries=new Map();
+app.post("/api/contact",async(q,s)=>{try{
+ const b=q.body||{};if(b.website)return s.json({ok:true}); // champ piège anti-robots
+ const now=Date.now(),rec=(cTries.get(q.ip)||[]).filter(x=>now-x<36e5);
+ if(rec.length>=5)return s.status(429).json({error:"Trop de messages envoyés, réessayez plus tard"});
+ const name=String(b.name||"").trim().slice(0,100),email=String(b.email||"").trim().slice(0,200),subject=String(b.subject||"").trim().slice(0,150),text=String(b.text||"").trim().slice(0,5000);
+ if(!name)return s.status(400).json({error:"Indiquez votre nom"});
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return s.status(400).json({error:"Adresse e-mail invalide"});
+ if(text.length<5)return s.status(400).json({error:"Votre message est trop court"});
+ rec.push(now);cTries.set(q.ip,rec);await Msg.create({name,email,subject,text});s.json({ok:true});
+}catch(e){s.status(500).json({error:"Erreur serveur, réessayez plus tard"})}});
+app.get("/api/messages",auth,async(_,s)=>s.json(await Msg.find().sort({createdAt:-1})));
+app.put("/api/messages/:id",auth,async(q,s)=>{try{s.json(await Msg.findByIdAndUpdate(q.params.id,{read:!!q.body.read},{new:true}))}catch(e){s.status(400).json({error:e.message})}});
+app.delete("/api/messages/:id",auth,async(q,s)=>{await Msg.findByIdAndDelete(q.params.id);s.json({ok:true})});
 // Séances sur une période : film + date de début/fin + jours + horaires
 const pad2=n=>String(n).padStart(2,"0"),isoU=d=>d.getUTCFullYear()+"-"+pad2(d.getUTCMonth()+1)+"-"+pad2(d.getUTCDate());
 app.post("/api/seances/bulk",auth,async(q,s)=>{try{
@@ -41,7 +57,7 @@ app.post("/api/seances/bulk",auth,async(q,s)=>{try{
   for(const time of T)out.push({film,date:isoU(d),time,room:room||"",version:version||"VF",thx:!!thx});
   if(out.length>3000)return s.status(400).json({error:"Trop de séances d'un coup (maximum 3000) : réduisez la période"});
  }
- const ex=await M.seances.find({film,date:{$gte:date,$lte:end}}).select("date time"),have=new Set(ex.map(x=>x.date+"|"+x.time)),nw=out.filter(x=>!have.has(x.date+"|"+x.time));
+ const ex=await M.seances.find({film,date:{$gte:date,$lte:end}}).select("date time"),have={};ex.forEach(x=>{have[x.date+"|"+x.time]=1});const nw=out.filter(x=>!have[x.date+"|"+x.time]);
  if(nw.length)await M.seances.insertMany(nw);
  s.json({created:nw.length,skipped:out.length-nw.length});
 }catch(e){s.status(400).json({error:e.message})}});
