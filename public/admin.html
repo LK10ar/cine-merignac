@@ -1,36 +1,53 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin – Ciné Mérignac</title>
-<style>*{box-sizing:border-box}body{margin:0;font:15px system-ui,sans-serif;background:#f4f4f7;color:#14141c}.w{max-width:1000px;margin:auto;padding:20px}
-.card{background:#fff;border:1px solid #e3e3ea;border-radius:14px;padding:20px;margin-bottom:18px}h1{font-size:22px}label{display:block;font-size:13px;color:#6b6b7a;margin:10px 0 0}
-input,select,textarea{width:100%;padding:10px 12px;border:1px solid #d5d5de;border-radius:10px;font:inherit;margin-top:4px}input[type=checkbox]{width:auto}
-.b{background:#e5173f;color:#fff;border:0;border-radius:99px;padding:10px 18px;font-weight:600;cursor:pointer}.b.o{background:none;color:#14141c;border:1px solid #d5d5de}.b.s{padding:5px 12px;font-size:13px}
-.tabs{display:flex;gap:8px;margin:14px 0}.tabs .b:not(.on){background:none;color:#14141c;border:1px solid #d5d5de}.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0 16px}
-table{width:100%;border-collapse:collapse}td,th{padding:9px 6px;border-bottom:1px solid #eee;text-align:left}.err{color:#e5173f;margin-top:8px}</style></head><body><div class="w" id="app"></div>
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Administration</title>
+<style>*{box-sizing:border-box}body{margin:0;font:15px system-ui,sans-serif;background:#f1f2f6;color:#161620}
+.lay{display:flex;min-height:100vh}.sb{width:220px;background:#161620;color:#fff;padding:16px;flex:none;position:sticky;top:0;height:100vh}.sb h1{font-size:17px;margin:0 0 18px}
+.sb button,.sb a{display:block;width:100%;text-align:left;background:none;border:0;color:#cfd0dc;padding:10px 12px;border-radius:8px;cursor:pointer;font:inherit;text-decoration:none;margin-bottom:2px}.sb .on,.sb button:hover,.sb a:hover{background:#2a2a3c;color:#fff}.sb hr{border:0;border-top:1px solid #333;margin:12px 0}
+.mn{flex:1;padding:22px;max-width:1000px;min-width:0}h2{margin:0 0 16px}.card{background:#fff;border:1px solid #e1e2ea;border-radius:14px;padding:18px;margin-bottom:18px}
+label{display:block;font-size:13px;color:#666;margin-top:12px}input,select,textarea{width:100%;padding:10px;border:1px solid #d3d4de;border-radius:9px;font:inherit;margin-top:4px;background:#fff}input[type=checkbox]{width:auto}input[type=color]{height:42px;padding:3px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:0 16px}.b{background:#e5173f;color:#fff;border:0;border-radius:99px;padding:10px 20px;font-weight:600;cursor:pointer;font:inherit;font-weight:600}.b.o{background:none;color:#161620;border:1px solid #d3d4de}.b.s{padding:5px 12px;font-size:13px}
+table{width:100%;border-collapse:collapse}td,th{padding:9px 6px;border-bottom:1px solid #eee;text-align:left;font-size:14px}.err{color:#e5173f;margin-top:8px}.ok{color:#168a3d;margin-top:8px}
+.im img{max-height:90px;max-width:100%;display:block;margin:6px 0;border-radius:8px;background:#eee}.im input[type=file]{padding:6px}.tt{overflow-x:auto}.top{display:none}
+@media(max-width:760px){.lay{display:block}.sb{width:100%;height:auto;position:static;display:flex;flex-wrap:wrap;gap:4px}.sb h1{width:100%;margin:0 0 8px}.sb button,.sb a{width:auto;padding:8px 10px}.sb hr{display:none}.mn{padding:12px}}</style></head><body><div id="app"></div>
 <script>
-const FM=[["title","Titre *"],["status","Statut",["old:À l'affiche","new:Nouveauté de la semaine","soon:Prochainement"]],["duration","Durée (ex. 1h40)"],["rating","Public"],["genre","Genre"],["director","Réalisateur"],["cast","Acteurs"],["releaseDate","Date de sortie"],["poster","URL de l'affiche"],["backdrop","URL image large (carrousel)"],["trailer","Lien YouTube de la bande-annonce"],["synopsis","Synopsis","area"],["featured","Mettre en avant dans le carrousel","chk"]];
+const FM=[["title","Titre *"],["status","Statut",["old:À l'affiche","new:Nouveauté","soon:Prochainement"]],["duration","Durée (ex. 1h40)"],["rating","Public"],["genre","Genre"],["director","Réalisateur"],["cast","Acteurs"],["releaseDate","Date de sortie"],["poster","Affiche","img"],["backdrop","Grande image du carrousel","img"],["trailer","Lien bande-annonce"],["synopsis","Synopsis","area"],["featured","Afficher dans le carrousel","chk"]];
 const CFG={films:{l:"Films",cols:["title","status","duration"],f:FM},
-seances:{l:"Séances",cols:["film","date","time","room"],f:[["film","Film *","films"],["date","Date *","date"],["time","Horaires * (plusieurs possibles : 14h00, 16h30, 19h00)"],["room","Salle"],["version","Version (VF, VOST…)"],["thx","Salle THX","chk"]]},
-events:{l:"Évènements",cols:["title","label","date"],f:[["title","Titre *"],["label","Étiquette (Avant-première, Ciné-débat…)"],["date","Date (texte libre)"],["text","Description","area"],["image","URL de l'image"],["featured","Mettre en avant","chk"]]}};
-let T=sessionStorage.t,tab="films",D={films:[],seances:[],events:[]},ed=null,msg="";const $=s=>document.querySelector(s);
-const api=async(m,u,b)=>{const r=await fetch("/api/"+u,{method:m,headers:{"Content-Type":"application/json",Authorization:"Bearer "+T},body:b&&JSON.stringify(b)});if(r.status==401&&u!="login"){sessionStorage.removeItem("t");T=null;draw();throw"Session expirée"}const j=await r.json();if(!r.ok)throw j.error||"Erreur";return j};
-const load=async()=>{for(const k in D)D[k]=await api("GET",k)};
+seances:{l:"Séances",cols:["film","date","time","room"],f:[["film","Film *","films"],["date","Date *","date"],["time","Horaires * (plusieurs : 14h00, 16h30, 19h00)"],["room","Salle"],["version","Version (VF, VOST…)"],["thx","Salle THX","chk"]]},
+events:{l:"Évènements",cols:["title","label","date"],f:[["title","Titre *"],["label","Étiquette (Avant-première…)"],["date","Date"],["text","Description","area"],["image","Image","img"],["featured","Mettre en avant","chk"]]},
+news:{l:"Actualités",cols:["title","createdAt"],f:[["title","Titre *"],["image","Image","img"],["text","Contenu","area"]]},
+pages:{l:"Pages",cols:["title","inMenu","order"],f:[["title","Titre *"],["text","Contenu","area"],["inMenu","Afficher dans le menu","chk"],["order","Ordre dans le menu (1,2,3…)","num"]]}};
+const SET=[["siteName","Nom du site"],["logo","Logo","img"],["favicon","Icône (favicon)","img"],["primary","Couleur principale","color"],["bg","Couleur de fond","color"],["panel","Couleur des panneaux","color"],["seoTitle","Titre SEO (onglet Google)"],["seoDesc","Description SEO","area"],["ogImage","Image de partage (réseaux)","img"],["address","Adresse"],["footer","Texte du pied de page"],["prices","Tarifs (Nom:prix, séparés par des virgules)","area"]];
+let T=sessionStorage.t,tab="films",D={},ed=null,msg="",ok="";const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+const api=async(m,u,b)=>{const r=await fetch("/api/"+u,{method:m,headers:{"Content-Type":"application/json",Authorization:"Bearer "+T},body:b&&JSON.stringify(b)});const j=await r.json().catch(()=>({}));if(r.status==401&&u!="login"){sessionStorage.removeItem("t");T=null;draw();throw"Session expirée, reconnectez-vous"}if(!r.ok)throw j.error||"Erreur";return j};
+const load=async()=>{for(const k of["films","seances","events","news","pages"])D[k]=await api("GET",k);D.settings=await api("GET","settings")};
 const fn=id=>(D.films.find(f=>f._id==id)||{}).title||"?";
-function field([k,l,t],v){v=v??"";if(t=="chk")return`<label><input type=checkbox name=${k} ${v?"checked":""}> ${l}</label>`;
-if(t=="area")return`<label>${l}<textarea name=${k} rows=3>${v}</textarea></label>`;
-if(t=="films")return`<label>${l}<select name=${k}>${D.films.map(f=>`<option value="${f._id}" ${f._id==v?"selected":""}>${f.title}</option>`).join("")}</select></label>`;
+const comp=f=>new Promise(r=>{const i=new Image();i.onload=()=>{const k=Math.min(1,1400/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*k;c.height=i.height*k;c.getContext("2d").drawImage(i,0,0,c.width,c.height);r(c.toDataURL(f.type=="image/png"&&f.size<4e5?"image/png":"image/jpeg",.82))};i.src=URL.createObjectURL(f)});
+function field([k,l,t],v){v=v??"";
+if(t=="chk")return`<label><input type=checkbox name=${k} ${v?"checked":""}> ${l}</label>`;
+if(t=="area")return`<label>${l}<textarea name=${k} rows=5>${esc(v)}</textarea></label>`;
+if(t=="color")return`<label>${l}<input name=${k} type=color value="${v||"#e5173f"}"></label>`;
+if(t=="films")return`<label>${l}<select name=${k}>${D.films.map(f=>`<option value="${f._id}" ${f._id==v?"selected":""}>${esc(f.title)}</option>`).join("")}</select></label>`;
+if(t=="img")return`<div class=im><label>${l}</label><img src="${esc(v)}" ${v?"":"hidden"}><input name=${k} value="${esc(v)}" placeholder="URL de l'image (ou envoyez un fichier ci-dessous)"><input type=file accept="image/*" data-up=${k}> ${v?`<button type=button class="b o s" data-rm=${k}>Retirer</button>`:""}</div>`;
 if(Array.isArray(t))return`<label>${l}<select name=${k}>${t.map(o=>{const[a,b]=o.split(":");return`<option value="${a}" ${a==v?"selected":""}>${b}</option>`}).join("")}</select></label>`;
-return`<label>${l}<input name=${k} type="${t=="date"?"date":"text"}" value="${String(v).replace(/"/g,"&quot;")}"></label>`}
-function draw(){const a=$("#app");if(!T){a.innerHTML=`<div class=card style="max-width:380px;margin:80px auto"><h1>Administration</h1><label>Mot de passe<input id=pw type=password></label><p><button class=b id=go>Connexion</button></p><div class=err id=e></div></div>`;
+return`<label>${l}<input name=${k} type="${t=="date"?"date":t=="num"?"number":"text"}" value="${esc(v)}"></label>`}
+const cell=(k,x)=>k=="film"?fn(x.film):k=="inMenu"?(x[k]?"Oui":"Non"):k=="createdAt"?new Date(x[k]).toLocaleDateString("fr-FR"):esc(x[k]??"");
+function draw(){const a=$("#app");
+if(!T){a.innerHTML=`<div class=card style="max-width:380px;margin:80px auto"><h2>Administration</h2><label>Mot de passe<input id=pw type=password autofocus></label><p><button class=b id=go>Connexion</button></p><div class=err id=e></div></div>`;
 const go=async()=>{try{T=(await api("POST","login",{password:$("#pw").value})).token;sessionStorage.t=T;await load();draw()}catch(e){$("#e").textContent=e}};$("#go").onclick=go;$("#pw").onkeydown=e=>e.key=="Enter"&&go();return}
-const c=CFG[tab],it=D[tab];
-a.innerHTML=`<h1>Ciné Mérignac – administration</h1><div class=tabs>${Object.keys(CFG).map(k=>`<button class="b ${k==tab?"on":""}" data-t=${k}>${CFG[k].l}</button>`).join("")}<span style="flex:1"></span><a class="b o" href="/" target=_blank>Voir le site</a> <button class="b o" id=out>Déconnexion</button></div>
-<div class=card><b>${ed?"Modifier":"Ajouter"} – ${c.l}</b><form id=fm><div class=g>${c.f.map(f=>field(f,ed&&ed[f[0]]!=null?(f[2]=="films"&&ed.film?ed.film:ed[f[0]]):"")).join("")}</div><p><button class=b>Enregistrer</button> ${ed?'<button type=button class="b o" id=cx>Annuler</button>':""}</p><div class=err>${msg}</div></form></div>
-<div class=card><table><tr>${c.cols.map(k=>`<th>${k}</th>`).join("")}<th></th></tr>${it.map(x=>`<tr>${c.cols.map(k=>`<td>${k=="film"?fn(x.film):x[k]??""}</td>`).join("")}<td style="text-align:right"><button class="b o s" data-e=${x._id}>Modifier</button> <button class="b o s" data-d=${x._id}>Supprimer</button></td></tr>`).join("")||"<tr><td>Rien pour le moment</td></tr>"}</table></div>`;
+const side=`<div class=sb><h1>🎬 ${esc(D.settings.siteName||"Administration")}</h1>${[...Object.keys(CFG),"settings"].map(k=>`<button class="${k==tab?"on":""}" data-t=${k}>${k=="settings"?"⚙ Réglages du site":CFG[k].l}</button>`).join("")}<hr><a href="/" target=_blank>Voir le site ↗</a><button id=out>Déconnexion</button></div>`;
+let body;
+if(tab=="settings")body=`<h2>Réglages du site</h2><form id=fm class=card><div class=g>${SET.map(f=>field(f,D.settings[f[0]])).join("")}</div><p><button class=b>Enregistrer</button></p><div class=err>${msg}</div><div class=ok>${ok}</div></form>`;
+else{const c=CFG[tab],it=D[tab];body=`<h2>${c.l}</h2><form id=fm class=card><b>${ed?"Modifier":"Ajouter"}</b><div class=g>${c.f.map(f=>field(f,ed&&(f[2]=="films"?ed.film:ed[f[0]]))).join("")}</div><p><button class=b>${ed?"Enregistrer":"Ajouter"}</button> ${ed?'<button type=button class="b o" id=cx>Annuler</button>':""}</p><div class=err>${msg}</div><div class=ok>${ok}</div></form>
+<div class="card tt"><table><tr>${c.cols.map(k=>`<th>${k}</th>`).join("")}<th></th></tr>${it.map(x=>`<tr>${c.cols.map(k=>`<td>${cell(k,x)}</td>`).join("")}<td style="text-align:right;white-space:nowrap"><button class="b o s" data-e=${x._id}>Modifier</button> <button class="b o s" data-d=${x._id}>Supprimer</button></td></tr>`).join("")||"<tr><td>Rien pour le moment</td></tr>"}</table></div>`}
+a.innerHTML=`<div class=lay>${side}<div class=mn>${body}</div></div>`;
 $("#out").onclick=()=>{sessionStorage.removeItem("t");T=null;draw()};
-a.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tab=b.dataset.t;ed=null;msg="";draw()});
-a.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{ed=it.find(x=>x._id==b.dataset.e);draw();scrollTo(0,0)});
-a.querySelectorAll("[data-d]").forEach(b=>b.onclick=async()=>{if(confirm("Supprimer définitivement ?")){await api("DELETE",tab+"/"+b.dataset.d);await load();draw()}});
-if(ed)$("#cx").onclick=()=>{ed=null;draw()};
-$("#fm").onsubmit=async e=>{e.preventDefault();const o={};c.f.forEach(([k,,t])=>{const el=e.target.elements[k];o[k]=t=="chk"?el.checked:el.value});
-try{if(tab=="seances"&&!ed){for(const t of o.time.split(",").map(s=>s.trim()).filter(Boolean))await api("POST","seances",{...o,time:t})}else await api(ed?"PUT":"POST",tab+(ed?"/"+ed._id:""),o);ed=null;msg="";await load();draw()}catch(er){msg=er;draw()}};}
+a.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tab=b.dataset.t;ed=null;msg=ok="";draw()});
+a.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{ed=D[tab].find(x=>x._id==b.dataset.e);msg=ok="";draw();scrollTo(0,0)});
+a.querySelectorAll("[data-d]").forEach(b=>b.onclick=async()=>{if(confirm("Supprimer définitivement ?")){try{await api("DELETE",tab+"/"+b.dataset.d);await load();draw()}catch(e){alert(e)}}});
+a.querySelectorAll("[data-up]").forEach(i=>i.onchange=async()=>{if(!i.files[0])return;const u=await comp(i.files[0]),w=i.closest(".im");w.querySelector("input:not([type=file])").value=u;const m=w.querySelector("img");m.src=u;m.hidden=false});
+a.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{const w=b.closest(".im");w.querySelector("input:not([type=file])").value="";w.querySelector("img").hidden=true;b.remove()});
+if(ed&&tab!="settings")$("#cx").onclick=()=>{ed=null;draw()};
+$("#fm").onsubmit=async e=>{e.preventDefault();const fs=tab=="settings"?SET:CFG[tab].f,o={};fs.forEach(([k,,t])=>{const el=e.target.elements[k];o[k]=t=="chk"?el.checked:t=="num"?(+el.value||0):el.value});
+try{if(tab=="settings")await api("PUT","settings",o);else if(tab=="seances"&&!ed){for(const t of o.time.split(",").map(s=>s.trim()).filter(Boolean))await api("POST","seances",{...o,time:t})}else await api(ed?"PUT":"POST",tab+(ed?"/"+ed._id:""),o);
+ed=null;msg="";ok="Enregistré ✔";await load();draw()}catch(er){msg=er;ok="";draw()}}}
 T?load().then(draw).catch(draw):draw();
 </script></body></html>
