@@ -1,8 +1,8 @@
 const express=require("express"),mongoose=require("mongoose"),crypto=require("crypto"),path=require("path");
 const {MONGODB_URI,TOKEN_SECRET="change-me",PORT=3000}=process.env;
 // Si ADMIN_PASSWORD n'est pas défini sur l'hébergeur, le mot de passe par défaut est "admin1234"
-const ADMIN_PASSWORD=process.env.ADMIN_PASSWORD||"admin1234";
-if(!process.env.ADMIN_PASSWORD)console.warn("⚠ ADMIN_PASSWORD absent : mot de passe par défaut 'admin1234'. Définissez-le !");
+const ADMIN_PASSWORD=(process.env.ADMIN_PASSWORD||"admin1234").trim();
+console.log(process.env.ADMIN_PASSWORD?"ADMIN_PASSWORD défini ("+ADMIN_PASSWORD.length+" caractères)":"⚠ ADMIN_PASSWORD absent : mot de passe par défaut admin1234");
 const app=express();app.set("trust proxy",1);app.use(express.json({limit:"12mb"}));
 app.use(express.static(path.join(__dirname,"public")));app.get("/healthz",(_,r)=>r.send("ok"));
 const S=(o)=>new mongoose.Schema(o,{timestamps:true,strict:false});
@@ -21,7 +21,7 @@ app.post("/api/login",(req,res)=>{
  const t=tries.get(req.ip)||{n:0,r:Date.now()+9e5};if(Date.now()>t.r){t.n=0;t.r=Date.now()+9e5}
  if(t.n>=10)return res.status(429).json({error:"Trop d'essais, réessayez dans 15 min"});
  t.n++;tries.set(req.ip,t);
- if(!same(req.body.password||"",ADMIN_PASSWORD))return res.status(401).json({error:"Mot de passe incorrect"});
+ if(!same(String(req.body.password||"").trim(),ADMIN_PASSWORD))return res.status(401).json({error:"Mot de passe incorrect"});
  t.n=0;const p=Buffer.from(JSON.stringify({exp:Date.now()+12*36e5})).toString("base64url");
  res.json({token:p+"."+sign(p)});
 });
@@ -50,4 +50,13 @@ async function seed(){
  await M.news.create({title:"Bienvenue sur notre nouveau site",text:"Retrouvez toute la programmation et réservez en ligne."});
  await Set.create({siteName:"Ciné Mérignac",primary:"#e5173f",bg:"#222222",panel:"#0a4f6b",prices:"Plein:11.70,Réduit:9.00,-18 ans ou Étudiant:8.00,-16 ans:6.60",seoDesc:"Horaires, films à l'affiche et réservation en ligne."});
 }
-mongoose.connect(MONGODB_URI).then(async()=>{if(!(await M.films.countDocuments()))await seed();app.listen(PORT,()=>console.log("Ciné sur le port "+PORT))}).catch(e=>{console.error("MongoDB :",e.message);process.exit(1)});
+async function ensure(){
+ const D={siteName:"Ciné Mérignac",primary:"#e5173f",bg:"#222222",panel:"#0a4f6b",prices:"Plein:11.70,Réduit:9.00,-18 ans ou Étudiant:8.00,-16 ans:6.60",seoTitle:"Ciné Mérignac – Films à l'affiche, horaires et réservation",seoDesc:"Site officiel du Ciné Mérignac : films à l'affiche, horaires des séances, informations sur les films, bandes-annonces et films à venir.",footer:"©2026 Ciné Mérignac",email:"merignac.cine@gmail.com",facebook:"https://www.facebook.com/Merignac-cine-10150103444810381",twitter:"https://twitter.com/MerignacCine",address:"",phone:"",footerLinks:""};
+ const c=await Set.findOne();
+ if(!c)await Set.create(D);else{const u={};for(const k in D)if(c.get(k)==null)u[k]=D[k];if(Object.keys(u).length)await Set.updateOne({_id:c._id},{$set:u})}
+ if(!(await M.pages.countDocuments())){
+  const L=[["Infos pratiques",1,1],["Contact",1,1],["Plan d'accès",1,1],["Tarifs",1,1],["Anniversaire",0,1],["CE et groupes",0,1],["Location de salle",0,1],["Comités d'entreprises",0,1],["Arbre de Noël",0,1],["Groupes",0,1],["Jeune-public",0,1],["Carte cinéma",0,1],["Politique de protection des données personnelles",0,1],["Mentions légales",0,1],["Charte cookies",0,1],["Conditions générales d'utilisation (CGU)",0,1],["Conditions générales du service de réservation en ligne (CGV)",0,1]];
+  await M.pages.create(L.map(([title,inMenu,inFooter],i)=>({title,inMenu:!!inMenu,inFooter:!!inFooter,order:i+1,text:"Contenu à compléter depuis l'administration (menu Pages)."})));
+ }
+}
+mongoose.connect(MONGODB_URI).then(async()=>{if(!(await M.films.countDocuments()))await seed();await ensure();app.listen(PORT,()=>console.log("Ciné sur le port "+PORT))}).catch(e=>{console.error("MongoDB :",e.message);process.exit(1)});
