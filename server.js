@@ -88,4 +88,44 @@ async function ensure2(){
  const mn=c.get("menu");
  if(!Array.isArray(mn)||!mn.length){const pg=await M.pages.find({inMenu:true}).sort({order:1});await Set.updateOne({_id:c._id},{$set:{menu:[{label:"Films",url:"#/films"},{label:"Évènements",url:"#/events"},{label:"Actualités",url:"#/actus"},...pg.map(p=>({label:p.title,url:"#/page/"+p._id}))]}})}
 }
-mongoose.connect(MONGODB_URI).then(async()=>{if(!(await M.films.countDocuments()))await seed();await ensure();await ensure2();app.listen(PORT,()=>console.log("Ciné sur le port "+PORT))}).catch(e=>{console.error("MongoDB :",e.message);process.exit(1)});
+
+// ===== Infos reprises du site officiel Ciné Mérignac (importées une seule fois) =====
+const REAL=[
+{title:"Ducobu et le fantôme de Saint-Potache",duration:"1h30",rating:"Tous publics",genre:"Comédie, Famille",director:"Elie Semoun",cast:"Charlie Garnier Naslin, Elie Semoun, Émilie Caen, Frédérique Bel, Loïc Legendre",releaseDate:"7 octobre 2026",status:"new",featured:true,version:"VF",pmr:true,synopsis:"C'est Halloween, et Ducobu revient pour une aventure pleine de rires et de mystères ! Le professeur Latouche et Mademoiselle Rateau emménagent dans une maison... hantée par le fantôme d'Anatole, le plus grand cancre de l'histoire de l'école Saint-Potache. Ce fantôme farceur va entraîner Ducobu, Léonie, leurs parents et Kitrish dans une série de péripéties aussi drôles qu'inattendues. Mais attention : à Halloween, tout peut arriver..."},
+{title:"La Maison de nos rêves",duration:"1h30",rating:"Tous publics",genre:"Comédie",director:"Claude Zidi Jr.",cast:"Kev Adams, Chantal Ladesou, Camille Aguilar, Jonathan Lambert, Michel Jonasz",releaseDate:"7 octobre 2026",status:"new"},
+{title:"Mochy, le chien le plus moche du monde",duration:"1h25",rating:"Tous publics",genre:"Animation",director:"Jérémie Degruson, Yanis Belaid",releaseDate:"14 octobre 2026",status:"soon"},
+{title:"Le Monde à l'envers",duration:"0h45",genre:"Animation, Famille",director:"Arnaud Demuynck, Noé Garcia, Erwann Hette, Pascale Hecquet, Stéphanie Yang Chun",releaseDate:"7 octobre 2026",status:"new"},
+{title:"Retour au collège",duration:"1h25",rating:"Tous publics",genre:"Documentaire",director:"Antoine Fromental",releaseDate:"7 octobre 2026",status:"new"},
+{title:"Cars",duration:"1h57",rating:"Tous publics",genre:"Animation, comédie, action, fantastique",director:"John Lasseter",cast:"Guillaume Canet, Bernard-Pierre Donnadieu, Cécile De France, Samuel Le Bihan, Guillaume Orsat",releaseDate:"30 septembre 2026",status:"old"},
+{title:"Digger",duration:"2h09",rating:"Tous publics",genre:"Action, comédie",director:"Alejandro Gonzalez Iñárritu",cast:"Tom Cruise, Sandra Hüller, Riz Ahmed, John Goodman, Michael Stuhlbarg",releaseDate:"30 septembre 2026",status:"new"},
+{title:"Verity",duration:"1h54",rating:"Tout public avec avertissement",genre:"Drame, Romance, thriller",director:"Michael Showalter",cast:"Anne Hathaway, Dakota Johnson, Josh Hartnett, Ismael Cruz Cordova, Brady Wagner",releaseDate:"30 septembre 2026",status:"new"},
+{title:"Heart Of The Beast",duration:"1h41",rating:"Tous publics",genre:"Action, aventure",director:"David Ayer",cast:"Brad Pitt, Uber, J.K. Simmons, Anna Lambe",releaseDate:"23 septembre 2026",status:"old"},
+{title:"Justin le Juste",duration:"1h50",rating:"Tous publics",genre:"Historique, guerre",director:"Eric Barbier",cast:"Alban Ivanov, Birane Ba, Alexandra Lamy, Thierry Hancisse, Nicolas Avinée",releaseDate:"23 septembre 2026",status:"old"},
+{title:"L'Invitation",duration:"1h47",rating:"Tous publics",genre:"Comédie",director:"Olivia Wilde",cast:"Seth Rogen, Olivia Wilde, Pénélope Cruz, Edward Norton, Skip Howland",releaseDate:"16 septembre 2026",status:"old"},
+{title:"Les Contrebandiers",duration:"1h53",rating:"Tout public avec avertissement",genre:"Thriller, action, aventure",director:"Padraic McKinley",cast:"Ethan Hawke, Russell Crowe, Julia Jones, Austin Amelio, Avi Nash",releaseDate:"16 septembre 2026",status:"old"},
+{title:"Les Héros du Louvre",duration:"1h45",rating:"Tous publics",genre:"Drame, Historique",director:"Elie Chouraqui",cast:"Kad Merad, Marie Gillain, Julia de Nunez, Fantine Guyot, Jean-Hugues Anglade",releaseDate:"9 septembre 2026",status:"old"},
+{title:"Pressure",duration:"1h40",rating:"Tous publics",genre:"Thriller, Historique, guerre",director:"Anthony Maras",cast:"Andrew Scott, Brendan Fraser, Kerry Condon, Chris Messina, Damian Lewis",releaseDate:"9 septembre 2026",status:"old"},
+{title:"Tombé du ciel",duration:"1h32",rating:"Tous publics",genre:"Comédie, Famille",director:"Mohamed Hamidi",cast:"Ilyes Djadel, Josiane Balasko, Fred Testot, Antoine Dulery, Jamel Debbouze",releaseDate:"12 août 2026",status:"old"}
+];
+const TARIFS_TXT="TARIFS (hors frais de gestion)\n\nNormal : 9,00 €\nRéduit : 6,50 €\nCarte jeune : 6,50 €\nFamille nombreuse : 6,50 €\nSenior : 6,50 €\nÉtudiant : 6,50 €\nMoins de 18 ans : 6,50 €\nSéances Jeunes parents : 6,00 € (gratuit pour les moins de 2 ans)\nMinokino : tarif unique 7 €\n\nMoyens de paiement acceptés : carte bancaire, carte d'abonnement, place unitaire du Ciné Mérignac, contremarques Recif, Chèque Cinéma Universel, Ciné Chèque (e-billet uniquement, aucune annulation possible).\n\nFRAIS DE GESTION (réservation en ligne, une seule fois par commande)\nJusqu'à 13 € : 0,25 € • de 13 à 30 € : 0,50 € • de 30 à 50 € : 0,75 € • de 50 à 80 € : 1,00 € • plus de 80 € : 1,50 €";
+const INFOS_TXT="RÉSERVATION EN LIGNE\nLes horaires indiquent le début des films. Vous pouvez réserver vos places jusqu'à 5 minutes avant le début de la séance. Annulation possible jusqu'à 15 minutes avant le début de la séance.\n\nACCESSIBILITÉ\nSalles accessibles aux personnes à mobilité réduite (PMR). Toutes les salles sont équipées pour l'audiodescription et l'amplification sonore pour malentendants (prêt de l'appareil en caisse, pièce d'identité en garantie ; munissez-vous de votre casque personnel).\n\nCONFISERIE (à retirer au stand confiserie)\nMenu Mini 4,50 € (1 soda + 1 pop mini) • Menu Petit solo 6,50 € • Menu Petit duo 8,50 € (2 boissons + 1 pop) • Menu Moyen solo 8,50 € • Menu Moyen duo 10,50 € • Menu Maxi solo 10,00 € • Menu Maxi duo 12,00 €.\nBoissons : Coca-Cola, Coca-Cola Zéro, Oasis Tropical, Orangina, Schweppes Agrumes, Coca Cherry, Lipton Ice Tea, eau San Pellegrino, Volvic citron/fraise.\n\nPOP-CORN ANTI-DÉCHETS\nApportez votre contenant et payez uniquement la recharge : mini 0,71 L, moyen 1,36 L, maxi 2,5 L.\n\nCARTE CINÉMA ET PASS 15/25\nGérez votre carte en ligne : places de cinéma, confiserie et cadeaux à gagner.";
+async function ensure3(){
+ const c=await Set.findOne();if(c.get("realdata"))return;
+ for(const f of REAL){
+  const ex=await M.films.findOne({title:f.title});
+  if(!ex){await M.films.create({featured:false,...f});continue}
+  const u={};for(const k in f)if(ex.get(k)==null||ex.get(k)==="")u[k]=f[k];
+  if(Object.keys(u).length)await M.films.updateOne({_id:ex._id},{$set:u});
+ }
+ // Séances de Ducobu du 7 au 13 octobre 2026 (relevées sur le site officiel)
+ const du=await M.films.findOne({title:"Ducobu et le fantôme de Saint-Potache"});
+ if(du&&!(await M.seances.countDocuments({film:du._id,date:"2026-10-07"}))){
+  const P={"2026-10-07":["14h00","16h30","19h00"],"2026-10-08":["14h00","16h30","19h00"],"2026-10-09":["14h00","16h30","19h00"],"2026-10-10":["16h30","19h00"],"2026-10-11":["14h00","16h30","19h00"],"2026-10-12":["14h00","16h30","19h00"],"2026-10-13":["10h00","16h30"]};
+  const L=[];for(const d in P)for(const time of P[d])L.push({film:du._id,date:d,time,room:"",version:"VF"});
+  await M.seances.create(L);
+ }
+ await Set.updateOne({_id:c._id},{$set:{prices:"Normal:9.00,Réduit:6.50,Carte jeune:6.50,Famille nombreuse:6.50,Senior:6.50,Étudiant:6.50,Moins de 18 ans:6.50",address:"6 place Charles de Gaulle, 33700 Mérignac",realdata:true}});
+ const tx=async(t,x)=>{const p=await M.pages.findOne({title:t});if(p&&(!p.text||/Contenu à compléter/.test(p.text)))await M.pages.updateOne({_id:p._id},{$set:{text:x}})};
+ await tx("Tarifs",TARIFS_TXT);await tx("Infos pratiques",INFOS_TXT);
+}
+mongoose.connect(MONGODB_URI).then(async()=>{if(!(await M.films.countDocuments()))await seed();await ensure();await ensure2();await ensure3();app.listen(PORT,()=>console.log("Ciné sur le port "+PORT))}).catch(e=>{console.error("MongoDB :",e.message);process.exit(1)});
