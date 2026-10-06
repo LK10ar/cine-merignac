@@ -16,8 +16,8 @@ table{width:100%;border-collapse:collapse}td,th{padding:9px 6px;border-bottom:1p
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
 const STA=["old:À l'affiche","new:Nouveauté","soon:Prochainement"];
-const CF={films:{l:"Films",cols:["title","status","duration"],f:[["title","Titre *"],["status","Statut",STA],["duration","Durée (ex. 1h40)"],["rating","Public"],["genre","Genre"],["director","Réalisateur"],["cast","Acteurs"],["releaseDate","Date de sortie"],["poster","Affiche","img"],["backdrop","Grande image du carrousel","img"],["trailer","Lien bande-annonce"],["synopsis","Synopsis","area"],["featured","Afficher dans le carrousel","chk"]]},
-seances:{l:"Séances",cols:["film","date","time","room"],f:[["film","Film *","films"],["date","Date *","date"],["time","Horaires * (plusieurs : 14h00, 16h30, 19h00)"],["room","Salle"],["version","Version (VF, VOST…)"],["thx","Salle THX","chk"]]},
+const CF={films:{l:"Films",cols:["title","status","duration"],f:[["title","Titre *"],["status","Statut",STA],["duration","Durée (ex. 1h40)"],["rating","Public"],["genre","Genre"],["director","Réalisateur"],["cast","Acteurs"],["releaseDate","Date de sortie"],["poster","Affiche","img"],["backdrop","Grande image du carrousel","img"],["trailer","Bande-annonce : lien YouTube (ex. https://www.youtube.com/watch?v=...)"],["synopsis","Synopsis","area"],["featured","Afficher dans le carrousel","chk"]]},
+seances:{l:"Séances",cols:["film","date","time","room"],f:[["film","Film *","films"],["date","Date de début *","date"],["dateTo","Jusqu'au (facultatif : pour répéter sur une longue période)","date"],["time","Horaires * (plusieurs : 14h00, 16h30, 19h00)"],["room","Salle"],["version","Version (VF, VOST…)"],["thx","Salle THX","chk"]]},
 events:{l:"Évènements",cols:["title","label","date"],f:[["title","Titre *"],["label","Étiquette (Avant-première…)"],["date","Date"],["text","Description","area"],["image","Image","img"],["featured","Mettre en avant","chk"]]},
 news:{l:"Actualités",cols:["title","createdAt"],f:[["title","Titre *"],["image","Image","img"],["text","Contenu","area"]]}};
 const TABS=[["pages","Pages"],["menus","Menus"],["films","Films"],["events","Évènements"],["news","Actualités"],["design","Design"],["settings","Paramètres"]];
@@ -31,10 +31,12 @@ const TPL=[["Ciné Mérignac (officiel)",{primary:"#c32b34",bg:"#2b2b2b",panel:"
 const PAL=[["Programmation",[["carousel","Carrousel"],["today","Aujourd'hui (séances)"],["films","Films à l'affiche"],["soon","Prochainement"],["events","Évènements"],["news","Actualités"]]],["Contenu",[["title","Titre"],["text","Texte"],["image","Image"],["video","Vidéo"],["button","Bouton"],["divider","Séparateur"]]]];
 const BN=Object.fromEntries(PAL.flatMap(g=>g[1]));
 const BF={title:[["text","Texte du titre"],["align","Alignement",["left:Gauche","center:Centré"]]],text:[["text","Texte","area"]],image:[["src","Image","img"]],video:[["url","Lien YouTube"]],button:[["label","Texte du bouton"],["url","Lien (ex. #/films ou https://…)"]],today:[["title","Titre (facultatif)"]]};
-let T=sessionStorage.t,tab="pages",fsub="films",SEC="icons",D={},ed=null,pg=null,MN=[],curF=[],msg="",ok="",drag=null;
+let sf="",T=sessionStorage.t,tab="pages",fsub="films",SEC="icons",D={},ed=null,pg=null,MN=[],curF=[],msg="",ok="",drag=null;
 const api=async(m,u,b)=>{const r=await fetch("/api/"+u,{method:m,headers:{"Content-Type":"application/json",Authorization:"Bearer "+T},body:b&&JSON.stringify(b)});const j=await r.json().catch(()=>({}));if(r.status==401&&u!="login"){sessionStorage.removeItem("t");T=null;draw();throw"Session expirée, reconnectez-vous"}if(!r.ok)throw j.error||"Erreur";return j};
 const load=async()=>{for(const k of["films","seances","events","news","pages"])D[k]=await api("GET",k);D.settings=await api("GET","settings");const m=D.settings.menu;MN=(Array.isArray(m)&&m.length?m:[{label:"Films",url:"#/films"},{label:"Évènements",url:"#/events"},{label:"Actualités",url:"#/actus"}]).map(x=>({label:x.label,url:x.url}))};
-const run=async(fn,m="Enregistré ✔")=>{try{await fn();await load();msg="";ok=m}catch(er){msg=String(er);ok=""}draw()};
+const run=async(fn,m="Enregistré ✔")=>{try{const r=await fn();await load();msg="";ok=typeof m=="function"?m(r):m}catch(er){msg=String(er);ok=""}draw()};
+const tdy=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const WD=`<div><label>Jours de la semaine (pour une période : décochez les jours sans séance)</label>${[["1","lun"],["2","mar"],["3","mer"],["4","jeu"],["5","ven"],["6","sam"],["0","dim"]].map(([v,n])=>`<label style="display:inline-flex;gap:4px;margin:6px 14px 0 0;align-items:center"><input type=checkbox name=wd value=${v} checked> ${n}</label>`).join("")}</div>`;
 const fn=id=>(D.films.find(f=>f._id==id)||{}).title||"?";
 const comp=f=>new Promise(r=>{const i=new Image();i.onload=()=>{const k=Math.min(1,1400/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*k;c.height=i.height*k;c.getContext("2d").drawImage(i,0,0,c.width,c.height);r(c.toDataURL(f.type=="image/png"&&f.size<4e5?"image/png":"image/jpeg",.82))};i.src=URL.createObjectURL(f)});
 function field([k,l,t],v,x=""){v=v??"";
@@ -42,15 +44,15 @@ if(t=="chk")return`<label><input type=checkbox name=${k} ${x} ${v?"checked":""}>
 if(t=="area")return`<label>${l}<textarea name=${k} ${x} rows=5>${esc(v)}</textarea></label>`;
 if(t=="color")return`<label>${l}<input name=${k} ${x} type=color value="${esc(v||"#000000")}"></label>`;
 if(t=="films")return`<label>${l}<select name=${k} ${x}>${D.films.map(f=>`<option value="${f._id}" ${f._id==v?"selected":""}>${esc(f.title)}</option>`).join("")}</select></label>`;
-if(t=="img")return`<div class=im><label>${l}</label><img src="${esc(v)}" ${v?"":"hidden"}><input name=${k} ${x} value="${esc(v)}" placeholder="URL de l'image (ou envoyez un fichier)"><input type=file accept="image/*" data-up=${k} ${x}> ${v?`<button type=button class="b o s" data-clr=${k} ${x}>Retirer</button>`:""}</div>`;
+if(t=="img")return`<div class=im><label>${l}</label><img src="${esc(v)}" ${v?"":"hidden"}><input name=${k} ${x} value="${esc(v)}" placeholder="Collez ici le lien (URL) de l'image" inputmode=url><button type=button class="b o s" data-clr=${k} ${x}>Retirer</button></div>`;
 if(Array.isArray(t))return`<label>${l}<select name=${k} ${x}>${t.map(o=>{const[a,b]=o.split(":");return`<option value="${a}" ${a==v?"selected":""}>${b}</option>`}).join("")}</select></label>`;
 return`<label>${l}<input name=${k} ${x} type="${t=="date"?"date":t=="num"?"number":"text"}" value="${esc(v)}"></label>`}
 const read=(fs,f)=>Object.fromEntries(fs.map(([k,,t])=>{const el=f.elements[k];return[k,t=="chk"?el.checked:t=="num"?(+el.value||0):el.value]}));
 const cell=(k,x)=>k=="film"?fn(x.film):k=="createdAt"?new Date(x[k]).toLocaleDateString("fr-FR"):esc(x[k]??"");
 const curKey=()=>tab=="films"&&fsub=="seances"?"seances":tab;
 const msgs=()=>`<div class=err>${esc(msg)}</div><div class=ok>${ok}</div>`;
-function crud(k){const c=CF[k],it=D[k];return`<h2>${tab=="films"?"Films et séances":c.l}</h2>`+(tab=="films"?`<div class=sub><button data-fs=films class="${k=="films"?"on":""}">Films</button><button data-fs=seances class="${k=="seances"?"on":""}">Séances</button></div>`:"")+
-`<form id=fm class=card><b>${ed?"Modifier":"Ajouter"}</b><div class=g>${c.f.map(f=>field(f,ed&&(f[2]=="films"?ed.film:ed[f[0]]))).join("")}</div><p><button class=b>${ed?"Enregistrer":"Ajouter"}</button> ${ed?'<button type=button class="b o" id=cx>Annuler</button>':""}</p>${msgs()}</form>
+function crud(k){const td=tdy(),c=CF[k],it=k=="seances"?D[k].filter(s=>s.date>=td&&(!sf||s.film==sf)):D[k],past=k=="seances"?D[k].filter(s=>s.date<td).length:0;return`<h2>${tab=="films"?"Films et séances":c.l}</h2>`+(tab=="films"?`<div class=sub><button data-fs=films class="${k=="films"?"on":""}">Films</button><button data-fs=seances class="${k=="seances"?"on":""}">Séances</button></div>`:"")+
+`<form id=fm class=card><b>${ed?"Modifier":"Ajouter"}</b><div class=g>${c.f.filter(f=>!(f[0]=="dateTo"&&ed)).map(f=>field(f,ed&&(f[2]=="films"?ed.film:ed[f[0]]))).join("")}</div>${k=="seances"&&!ed?WD:""}<p><button class=b>${ed?"Enregistrer":"Ajouter"}</button> ${ed?'<button type=button class="b o" id=cx>Annuler</button>':""}</p>${msgs()}</form>${k=="seances"?`<div class=card><div class=g><label>Filtrer par film<select id=sfl><option value="">Tous les films</option>${D.films.map(f=>`<option value="${f._id}" ${f._id==sf?"selected":""}>${esc(f.title)}</option>`).join("")}</select></label></div><p>${it.length} séance(s) à venir affichée(s)${past?" · "+past+" séance(s) passée(s) masquée(s)":""}</p><p>${past?`<button type=button class="b o s" id=pgp>Supprimer les séances passées</button> `:""}${sf?`<button type=button class="b o s" id=pgf>Supprimer toutes les séances de ce film</button>`:""}</p></div>`:""}
 <div class="card tt"><table><tr>${c.cols.map(x=>`<th>${x}</th>`).join("")}<th></th></tr>${it.map(x=>`<tr>${c.cols.map(y=>`<td>${cell(y,x)}</td>`).join("")}<td style="text-align:right;white-space:nowrap"><button class="b o s" data-e=${x._id}>Modifier</button> <button class="b o s" data-d=${x._id}>Supprimer</button></td></tr>`).join("")||"<tr><td>Rien pour le moment</td></tr>"}</table></div>`}
 const sform=fs=>{curF=fs;return`<form id=fm class=card><div class=g>${fs.map(f=>field(f,f[0]=="headerSticky"?D.settings.headerSticky!==false:D.settings[f[0]])).join("")}</div><p><button class=b>Enregistrer</button></p>${msgs()}</form>`};
 const pagesList=()=>`<h2>Pages</h2><div class=bar><span>Chaque page est construite avec des blocs.</span><button class=b id=pn>+ Nouvelle page</button></div>${msgs()}<div class="card tt"><table><tr><th>Titre</th><th>Statut</th><th></th></tr>${D.pages.map(p=>`<tr><td>${esc(p.title)}</td><td>${p.isHome?"Page d'accueil ":""}${p.inFooter?"· Pied de page":""}</td><td style="text-align:right;white-space:nowrap"><button class="b o s" data-pe=${p._id}>Modifier</button> <button class="b o s" data-pd=${p._id}>Supprimer</button></td></tr>`).join("")}</table></div>`;
@@ -79,15 +81,21 @@ on("[data-t]",b=>b.onclick=()=>{tab=b.dataset.t;ed=null;pg=null;msg=ok="";draw()
 on("[data-fs]",b=>b.onclick=()=>{fsub=b.dataset.fs;ed=null;msg=ok="";draw()});
 on("[data-s]",b=>b.onclick=()=>{SEC=b.dataset.s;msg=ok="";draw()});
 on("[data-up]",i=>{if(i.dataset.b!=null)return;i.onchange=async()=>{if(!i.files[0])return;const u=await comp(i.files[0]),w=i.closest(".im");w.querySelector("input:not([type=file])").value=u;const m=w.querySelector("img");m.src=u;m.hidden=false}});
-on("[data-clr]",b=>{if(b.dataset.b!=null)return;b.onclick=()=>{const w=b.closest(".im");w.querySelector("input:not([type=file])").value="";w.querySelector("img").hidden=true;b.remove()}});
+on("[data-clr]",b=>{if(b.dataset.b!=null)return;b.onclick=()=>{const w=b.closest(".im");w.querySelector("input:not([type=file])").value="";w.querySelector("img").hidden=true}});
+on(".im input:not([type=file])",i=>{if(i.dataset.b!=null)return;i.addEventListener("input",()=>{const m=i.closest(".im").querySelector("img");m.src=i.value;m.hidden=!i.value})});
 on("[data-e]",b=>b.onclick=()=>{ed=D[curKey()].find(x=>x._id==b.dataset.e);msg=ok="";draw();scrollTo(0,0)});
 on("[data-d]",b=>b.onclick=()=>{if(confirm("Supprimer définitivement ?"))run(()=>api("DELETE",curKey()+"/"+b.dataset.d),"Supprimé ✔")});
 if($("#cx"))$("#cx").onclick=()=>{ed=null;draw()};
 const fm=$("#fm");
 if(fm)fm.onsubmit=e=>{e.preventDefault();
  if(tab=="settings"||tab=="design")return run(()=>api("PUT","settings",read(curF,fm)));
- const k=curKey(),o=read(CF[k].f,fm),was=ed;ed=null;
- run(async()=>{if(k=="seances"&&!was){for(const t of o.time.split(",").map(s=>s.trim()).filter(Boolean))await api("POST","seances",{...o,time:t})}else await api(was?"PUT":"POST",k+(was?"/"+was._id:""),o)})};
+ const k=curKey(),was=ed,fs=k=="seances"&&was?CF[k].f.filter(f=>f[0]!="dateTo"):CF[k].f,o=read(fs,fm);ed=null;
+ if(k=="seances"&&!was){const days=o.dateTo?[...fm.querySelectorAll("[name=wd]:checked")].map(x=>+x.value):[],times=o.time.split(",").map(s=>s.trim()).filter(Boolean);
+  return run(()=>api("POST","seances/bulk",{film:o.film,date:o.date,dateTo:o.dateTo||o.date,days,times,room:o.room,version:o.version,thx:o.thx}),r=>"✔ "+r.created+" séance(s) ajoutée(s)"+(r.skipped?" ("+r.skipped+" déjà existante(s))":""))}
+ run(()=>api(was?"PUT":"POST",k+(was?"/"+was._id:""),o))};
+if($("#sfl"))$("#sfl").onchange=e=>{sf=e.target.value;draw()};
+if($("#pgp"))$("#pgp").onclick=()=>{if(confirm("Supprimer toutes les séances avant aujourd'hui ?"))run(()=>api("POST","seances/purge",{before:tdy()}),r=>"✔ "+r.deleted+" séance(s) supprimée(s)")};
+if($("#pgf"))$("#pgf").onclick=()=>{if(confirm("Supprimer TOUTES les séances de ce film ?"))run(()=>api("POST","seances/purge",{film:sf}),r=>"✔ "+r.deleted+" séance(s) supprimée(s)")};
 on("[data-tpl]",b=>b.onclick=()=>{const c={...TPL[+b.dataset.tpl][1]};c.footerBg=c.primary;c.headerText="#ffffff";run(()=>api("PUT","settings",c),"Template appliqué ✔")});
 // pages
 if($("#pn"))$("#pn").onclick=()=>{pg={title:"",order:D.pages.length,blocks:[]};msg=ok="";draw()};
