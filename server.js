@@ -69,6 +69,10 @@ async function ensure2(){
  const c=await Set.findOne();
  await Set.updateOne({_id:c._id,address:{$in:["",null]}},{$set:{address:"6 place Charles de Gaulle, 33700 Mérignac"}});
  for(const[k,v]of Object.entries({headerBg:"#1b1b1b",headerText:"#ffffff",footerBg:"#e5173f",footerText:"#ffffff",fontFamily:"Montserrat"}))if(c.get(k)==null)await Set.updateOne({_id:c._id},{$set:{[k]:v}});
+ if(!c.get("brand")){
+  if(c.get("primary")==="#e5173f"&&!c.get("logo"))await Set.updateOne({_id:c._id},{$set:{primary:"#c32b34",bg:"#2b2b2b",panel:"#4e4848",headerBg:"#000000",footerBg:"#c32b34",fontFamily:"Open Sans",headingFont:"Audiowide",logo:"https://www.cinemerignac.fr/image/logo.png"}});
+  await Set.updateOne({_id:c._id},{$set:{brand:true}});
+ }
  if(!c.get("imported")){
   const SAMPLE=["Ducobu et le fantôme de Saint-Potache","Pressure","Mochy, le chien le plus moche du monde","La Maison de nos rêves","The Social Reckoning"];
   const fl=await M.films.find();
