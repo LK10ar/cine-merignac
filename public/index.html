@@ -28,6 +28,10 @@ input,textarea{width:100%;padding:11px;border-radius:8px;border:0;margin:6px 0 1
 .fsc{position:sticky;top:78px}.lk{font-weight:800;text-decoration:underline}
 @media(max-width:1000px){.fp{grid-template-columns:200px minmax(0,1fr)}.fsc{grid-column:1/-1;position:static}}
 @media(max-width:700px){.fhero{padding:16px}.fp{grid-template-columns:1fr}.pst{max-width:200px;margin:auto}.ft{font-size:26px}}
+.ct{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:24px;align-items:start}.cc{background:#ffffff12;border:1px solid #fff2;border-radius:14px;padding:16px;margin-bottom:12px;line-height:1.6}.cc b{display:block;margin-bottom:6px;font-family:var(--hf,inherit)}
+.cr label{display:block;font-weight:600;font-size:13px}.cr select{width:100%;padding:11px;border-radius:8px;border:0;margin:6px 0 12px;font:inherit}.cr textarea{min-height:150px;resize:vertical}.cr button:disabled{opacity:.6}
+.mp{width:100%;height:340px;border:0;border-radius:14px;margin-top:24px;display:block}.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}.ok2{color:#8dffb0;margin-top:12px;font-weight:700}.er2{color:#ffb3b3;margin-top:12px;font-weight:700}.ci{line-height:1.7;max-width:760px}
+@media(max-width:800px){.ct{grid-template-columns:1fr}}
 </style></head><body>
 <header><div class="hd"><a href="#/" id="lg"></a><nav id="nv"></nav></div></header><main id="v"></main><footer id="ft"></footer>
 <script>
@@ -53,7 +57,7 @@ async function init(){[S,F,SE,EV,N,P]=await Promise.all(['settings','films','sea
  so=[S.facebook&&`<a href="${e(S.facebook)}" target="_blank" rel="noopener">Facebook</a>`,S.twitter&&`<a href="${e(S.twitter)}" target="_blank" rel="noopener">X / Twitter</a>`].filter(Boolean).join(' · ');
  $('#ft').innerHTML=`<div class="fl">${al('#/','Accueil')}${al('#/films',"Films à l'affiche")}${al('#/events','Évènements')}${al('#/actus','Actualités')}${fp}${cu}</div>${ct?`<p>${ct}</p>`:''}${so?`<p>${so}</p>`:''}<small>${e(S.footer)}</small>`;route()}
 function route(){clearInterval(tm);const[,p,id]=location.hash.slice(1).split('/'),v=$('#v');scrollTo(0,0);
- ({'':home,films,film,book,events:evs,actus,actu,page}[p||''])(id,v);cen()}
+ ({'':home,films,film,book,events:evs,actus,actu,page,contact}[p||''])(id,v);cen()}
 addEventListener('hashchange',route);
 document.addEventListener('click',x=>{const c=x.target.closest('[data-sc]');if(c){c.parentNode.querySelector('.row').scrollBy({left:+c.dataset.sc*540,behavior:'smooth'});return}const tr=x.target.closest('[data-tr]');if(tr){const m=$('#tr');m&&m.scrollIntoView({behavior:'smooth',block:'start'});return}const t=x.target.closest('[data-d]');if(t){day=t.dataset.d;keep()}});
 document.addEventListener('change',x=>{if(x.target.matches('.dp')&&x.target.value){day=x.target.value;keep()}});
@@ -100,9 +104,19 @@ let Q=[];function book(id,v){const s=SE.find(z=>z._id==id),x=s&&F.find(f=>f._id=
  $('#ct').onclick=()=>{if(!tot())return alert('Choisissez au moins une place');
   v.innerHTML=`<div class="panel"><h2 style="margin-top:0">Coordonnées</h2><p>${T.map((t,i)=>Q[i]?Q[i]+' × '+e(t[0]):'').filter(Boolean).join(', ')} — <b>${tot().toFixed(2)} €</b></p><label>Nom<input id=n></label><label>Prénom<input id=p></label><label>E-mail<input id=m type=email></label><button class="btn f" id=ok>Continuer et payer ${tot().toFixed(2)} €</button></div>`;
   $('#ok').onclick=()=>{if(!$('#m').value)return alert('E-mail requis');v.innerHTML='<div class="panel"><h2>Demande enregistrée ✔</h2><p>Le paiement en ligne n\'est pas encore branché (Stripe à ajouter).</p><a class="btn" href="#/">Retour accueil</a></div>'}}}
+const SUBJ=['Question générale','Réservation / billetterie','Carte cinéma / Pass 15/25','Groupes, CE et scolaires','Anniversaire / location de salle','Programmation','Autre'];
+function contact(_,v){document.title='Contact – '+(S.siteName||'');
+ const ad=S.address||'',ph=S.phone||'',em=S.email||'',hr=S.hours||'',cd=(t,h)=>`<div class="cc"><b>${t}</b><div>${h}</div></div>`,
+ so=[S.facebook&&`<a class="lk" href="${e(S.facebook)}" target="_blank" rel="noopener">Facebook</a>`,S.twitter&&`<a class="lk" href="${e(S.twitter)}" target="_blank" rel="noopener">X / Twitter</a>`].filter(Boolean).join(' · ');
+ v.innerHTML=`<h2>Contact</h2>${S.contactIntro?`<p class="ci">${e(S.contactIntro)}</p>`:''}<div class="ct"><div>${ad?cd('Adresse',`${e(S.siteName||'')}<br>${e(ad)}<br><a class="lk" href="https://www.google.com/maps/dir/?api=1&amp;destination=${encodeURIComponent(ad)}" target="_blank" rel="noopener">Itinéraire ›</a>`):''}${ph?cd('Téléphone',`<a class="lk" href="tel:${e(ph.replace(/[^\d+]/g,''))}">${e(ph)}</a>`):''}${em?cd('E-mail',`<a class="lk" href="mailto:${e(em)}">${e(em)}</a>`):''}${hr?cd('Horaires',`<span style="white-space:pre-wrap">${e(hr)}</span>`):''}${so?cd('Suivez-nous',so):''}</div>
+ <form id="cf" class="panel cr" novalidate><h3 style="margin:0 0 12px">Écrivez-nous</h3><label for="cn">Nom *</label><input id="cn" name="nom" autocomplete="name" required><label for="ce">E-mail *</label><input id="ce" name="mail" type="email" autocomplete="email" required><label for="cs">Sujet</label><select id="cs" name="sujet">${SUBJ.map(s=>`<option>${e(s)}</option>`).join('')}</select><label for="cm">Message *</label><textarea id="cm" name="msg" required></textarea><input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="btn f" type="submit">Envoyer le message</button><div id="cr" role="status"></div></form></div>
+ ${ad?`<iframe class="mp" title="Plan d'accès" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=${encodeURIComponent(ad)}&z=16&output=embed"></iframe>`:''}`;
+ $('#cf').onsubmit=async ev=>{ev.preventDefault();const f=ev.target,el=f.elements,b=f.querySelector('button'),m=$('#cr');m.textContent='';m.className='';b.disabled=true;
+  try{const r=await fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:el.nom.value,email:el.mail.value,subject:el.sujet.value,text:el.msg.value,website:el.website.value})}),j=await r.json().catch(()=>({}));if(!r.ok)throw j.error||'Erreur';f.reset();m.className='ok2';m.textContent='Merci ! Votre message a bien été envoyé, nous vous répondrons rapidement.'}
+  catch(er){m.className='er2';m.textContent=typeof er=='string'?er:"Envoi impossible, réessayez dans un instant."}b.disabled=false}}
 function evs(_,v){v.innerHTML='<h2>Évènements</h2>'+evg(EV)}
 function actus(_,v){v.innerHTML='<h2>Actualités</h2>'+nwg(N)}
 function actu(id,v){const x=N.find(n=>n._id==id)||{};document.title=(x.title||'')+' – '+(S.siteName||'');v.innerHTML=`<h2>${e(x.title)}</h2>${x.image?`<img src="${e(x.image)}" style="max-width:100%;border-radius:14px">`:''}<p style="white-space:pre-wrap;line-height:1.7">${e(x.text)}</p>`}
-function page(id,v){const x=P.find(n=>n._id==id)||{};document.title=(x.title||'')+' – '+(S.siteName||'');if(x.blocks&&x.blocks.length)blocks(x.blocks,v);else v.innerHTML=`<h2>${e(x.title)}</h2><div style="white-space:pre-wrap;line-height:1.7">${e(x.text)}</div>`}
+function page(id,v){const x=P.find(n=>n._id==id)||{};if(/^contact$/i.test((x.title||'').trim())&&!(x.blocks&&x.blocks.length))return contact(id,v);document.title=(x.title||'')+' – '+(S.siteName||'');if(x.blocks&&x.blocks.length)blocks(x.blocks,v);else v.innerHTML=`<h2>${e(x.title)}</h2><div style="white-space:pre-wrap;line-height:1.7">${e(x.text)}</div>`}
 init();
 </script></body></html>
