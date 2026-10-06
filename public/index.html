@@ -29,9 +29,9 @@ const hrs=(fid,dt)=>{const l=SE.filter(s=>s.film==fid&&s.date==dt);return l.leng
 const tabs=()=>`<div class="tabs">${days().map(d=>`<div class="tb ${iso(d)==day?'on':''}" data-d="${iso(d)}">${fd(d)}</div>`).join('')}</div>`;
 async function init(){[S,F,SE,EV,N,P]=await Promise.all(['settings','films','seances','events','news','pages'].map(A));day=iso(new Date());
  const r=document.documentElement.style;if(S.primary)r.setProperty('--p',S.primary);if(S.bg)r.setProperty('--bg',S.bg);if(S.panel)r.setProperty('--pn',S.panel);
- document.title=S.seoTitle||S.siteName||'Cinéma';$('meta[name=description]').content=S.seoDesc||'';
+ document.title=S.seoTitle||S.siteName||'Cinéma';if(S.favicon){const l=document.createElement('link');l.rel='icon';l.href=S.favicon;document.head.appendChild(l)}if(S.ogImage){const m=document.createElement('meta');m.setAttribute('property','og:image');m.content=S.ogImage;document.head.appendChild(m)}$('meta[name=description]').content=S.seoDesc||'';
  $('#lg').innerHTML=S.logo?`<img src="${e(S.logo)}" alt="${e(S.siteName)}">`:`<span class="logo">${e(S.siteName||'Cinéma')}</span>`;
- $('#nv').innerHTML=[['#/films','Films'],['#/events','Évènements'],['#/actus','Actualités'],...P.filter(p=>p.inMenu).map(p=>['#/page/'+p._id,p.title])].map(([h,t])=>`<a href="${h}">${e(t)}</a>`).join('');
+ $('#nv').innerHTML=[['#/films','Films'],['#/events','Évènements'],['#/actus','Actualités'],...P.filter(p=>p.inMenu).sort((a,b)=>(a.order||0)-(b.order||0)).map(p=>['#/page/'+p._id,p.title])].map(([h,t])=>`<a href="${h}">${e(t)}</a>`).join('');
  $('#ft').innerHTML=e(S.footer||('© '+(S.siteName||'')+(S.address?' – '+S.address:'')));route()}
 function route(){clearInterval(tm);const[,p,id]=location.hash.slice(1).split('/'),v=$('#v');scrollTo(0,0);
  ({'':home,films,film,book,events:evs,actus,actu,page}[p||''])(id,v)}
